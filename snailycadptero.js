@@ -21,20 +21,20 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
 
         execSync(`cd /mnt/server`)
         execSync(`apt update`)
-        execSync(`apt install postgresql postgresql-contrib -y`)
-        execSync(`npm install -g pnpm`);
+        execSync(`DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends apt-utils postgresql postgresql-contrib -y`)
+        execSync(`DEBIAN_FRONTEND=noninteractive npm install -g pnpm`);
         execSync(`service postgresql start`)
 
         execSync(`echo "Adding User"`)
-        execSync(`psql -h localhost -d postgres -U postgres -c "CREATE USER snailycad WITH PASSWORD '${data['POSTGRES_PASSWORD']}' WITH SUPERUSER"`)
+        execSync(`DEBIAN_FRONTEND=noninteractive psql -h localhost -d postgres -U postgres -c "CREATE USER snailycad WITH PASSWORD '${data['POSTGRES_PASSWORD']}' WITH SUPERUSER"`)
         execSync(`echo "Making Database"`)
-        execSync(`psql -h localhost -d postgres -U postgres -c "SELECT 'CREATE DATABASE snaily-cadv4 WITH OWNER = ${data['POSTGRES_USER']}' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'snaily-cadv4')\gexec"`)
+        execSync(`DEBIAN_FRONTEND=noninteractive psql -h localhost -d postgres -U postgres -c "SELECT 'CREATE DATABASE snaily-cadv4 WITH OWNER = ${data['POSTGRES_USER']}' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'snaily-cadv4')\gexec"`)
 
         execSync(`echo "Cloning"`)
         execSync(`git clone https://github.com/SnailyCAD/snaily-cadv4.git`)
         execSync(`cp snaily-cadv4/* .`)
         execSync(`echo "Installing Dependicies"`)
-        execSync(`pnpm install`)
+        execSync(`DEBIAN_FRONTEND=noninteractive pnpm install`)
         execSync(`cp .env.example .env`)
         execSync(`echo "Changing ENV"`)
 
@@ -57,7 +57,7 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
 
         execSync(`node scripts/copy-env.mjs --client --api`)
         execSync(`echo "Building"`)
-        execSync(`pnpm run build`)
+        execSync(`DEBIAN_FRONTEND=noninteractive pnpm run build`)
     })
     .catch(error => {
         console.error('Error:', error);
