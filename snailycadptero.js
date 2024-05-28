@@ -27,11 +27,11 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
         execSync(`service postgresql start`, { stdio: 'inherit' });
 
         execSync(`echo "Adding User"`, { stdio: 'inherit' });
-        execSync(`DEBIAN_FRONTEND=noninteractive psql -h localhost -d postgres -U postgres -c "CREATE USER snailycad WITH PASSWORD '${data['POSTGRES_PASSWORD']};'"`, { stdio: 'inherit' });
+        execSync(`psql -h localhost -d postgres -U postgres -c "CREATE USER snailycad WITH PASSWORD '${data['POSTGRES_PASSWORD']}';"`, { stdio: 'inherit' });
         execSync(`echo "Granting Privileges"`, { stdio: 'inherit' });
-        execSync(`DEBIAN_FRONTEND=noninteractive psql -h localhost -d postgres -U postgres -c "ALTER USER snailycad WITH SUPERUSER;"`, { stdio: 'inherit' });
+        execSync(`psql -h localhost -d postgres -U postgres -c "ALTER USER snailycad WITH SUPERUSER;"`, { stdio: 'inherit' });
         execSync(`echo "Making Database"`, { stdio: 'inherit' });
-        execSync(`DEBIAN_FRONTEND=noninteractive psql -h localhost -d postgres -U postgres -c "DO
+        execSync(`psql -h localhost -d postgres -U postgres -c "DO
         $do$
         BEGIN
            IF NOT EXISTS (
