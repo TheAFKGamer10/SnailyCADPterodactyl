@@ -19,25 +19,25 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
             "SECURE_COOKIES_FOR_IFRAME": args[7]
         };
 
-        execSync(`cd /mnt/server`)
-        execSync(`apt update`)
-        execSync(`DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends apt-utils -y`)
-        execSync(`DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends postgresql postgresql-contrib -y`)
-        execSync(`DEBIAN_FRONTEND=noninteractive npm install -g pnpm`);
-        execSync(`service postgresql start`)
+        execSync(`cd /mnt/server`, { stdio: 'inherit' });
+        execSync(`apt update`, { stdio: 'inherit' });
+        execSync(`DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends apt-utils -y`, { stdio: 'inherit' });
+        execSync(`DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends postgresql postgresql-contrib -y`, { stdio: 'inherit' });
+        execSync(`DEBIAN_FRONTEND=noninteractive npm install -g pnpm`, { stdio: 'inherit' });;
+        execSync(`service postgresql start`, { stdio: 'inherit' });
 
-        execSync(`echo "Adding User"`)
-        execSync(`DEBIAN_FRONTEND=noninteractive psql -h localhost -d postgres -U postgres -c "CREATE USER snailycad WITH PASSWORD '${data['POSTGRES_PASSWORD']}' WITH SUPERUSER"`)
-        execSync(`echo "Making Database"`)
-        execSync(`DEBIAN_FRONTEND=noninteractive psql -h localhost -d postgres -U postgres -c "SELECT 'CREATE DATABASE snaily-cadv4 WITH OWNER = ${data['POSTGRES_USER']}' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'snaily-cadv4')\gexec"`)
+        execSync(`echo "Adding User"`, { stdio: 'inherit' });
+        execSync(`DEBIAN_FRONTEND=noninteractive psql -h localhost -d postgres -U postgres -c "CREATE USER snailycad WITH PASSWORD '${data['POSTGRES_PASSWORD']}' WITH SUPERUSER"`, { stdio: 'inherit' });
+        execSync(`echo "Making Database"`, { stdio: 'inherit' });
+        execSync(`DEBIAN_FRONTEND=noninteractive psql -h localhost -d postgres -U postgres -c "SELECT 'CREATE DATABASE snaily-cadv4 WITH OWNER = ${data['POSTGRES_USER']}' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'snaily-cadv4')\gexec"`, { stdio: 'inherit' });
 
-        execSync(`echo "Cloning"`)
-        execSync(`git clone https://github.com/SnailyCAD/snaily-cadv4.git`)
-        execSync(`cp snaily-cadv4/* .`)
-        execSync(`echo "Installing Dependicies"`)
-        execSync(`DEBIAN_FRONTEND=noninteractive pnpm install`)
-        execSync(`cp .env.example .env`)
-        execSync(`echo "Changing ENV"`)
+        execSync(`echo "Cloning"`, { stdio: 'inherit' });
+        execSync(`git clone https://github.com/SnailyCAD/snaily-cadv4.git`, { stdio: 'inherit' });
+        execSync(`cp snaily-cadv4/* .`, { stdio: 'inherit' });
+        execSync(`echo "Installing Dependicies"`, { stdio: 'inherit' });
+        execSync(`DEBIAN_FRONTEND=noninteractive pnpm install`, { stdio: 'inherit' });
+        execSync(`cp .env.example .env`, { stdio: 'inherit' });
+        execSync(`echo "Changing ENV"`, { stdio: 'inherit' });
 
         try {
             let envdir = './snaily-cadv4/.env';
@@ -56,9 +56,9 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
             console.error('Error:', error);
         }
 
-        execSync(`node scripts/copy-env.mjs --client --api`)
-        execSync(`echo "Building"`)
-        execSync(`DEBIAN_FRONTEND=noninteractive pnpm run build`)
+        execSync(`node scripts/copy-env.mjs --client --api`, { stdio: 'inherit' });
+        execSync(`echo "Building"`, { stdio: 'inherit' });
+        execSync(`DEBIAN_FRONTEND=noninteractive pnpm run build`, { stdio: 'inherit' });
     })
     .catch(error => {
         console.error('Error:', error);
