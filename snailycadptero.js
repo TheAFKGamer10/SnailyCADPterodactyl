@@ -23,7 +23,7 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
         execSync(`apt update`)
         execSync(`apt install postgresql postgresql-contrib -y`)
         execSync(`npm install -g pnpm`);
-        execSync(`systemctl start postgresql.service`)
+        execSync(`service postgresql start`)
         execSync(`systemctl enable postgresql.service`)
 
         execSync(`psql -d postgres -c "DO
@@ -42,7 +42,8 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
         execSync(`psql -d postgres -c "SELECT 'CREATE DATABASE snaily-cadv4 WITH OWNER = ${data['POSTGRES_USER']}' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'snaily-cadv4')\gexec"`)
 
         execSync(`git clone https://github.com/SnailyCAD/snaily-cadv4.git`)
-        execSync(`cd snaily-cadv4 && pnpm install`)
+        execSync(`cp snaily-cadv4/* .`)
+        execSync(`pnpm install`)
         execSync(`cp .env.example .env`)
 
         try {
