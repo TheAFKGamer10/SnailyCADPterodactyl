@@ -26,8 +26,8 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
         execSync(`service postgresql start`)
         execSync(`systemctl enable postgresql.service`)
 
-        execSync(`psql -d postgres -U postgres -c "CREATE USER snailycad WITH PASSWORD '${data['POSTGRES_PASSWORD']}' SUPERUSER"`)
-        execSync(`psql -d postgres -U postgres -c "SELECT 'CREATE DATABASE snaily-cadv4 WITH OWNER = ${data['POSTGRES_USER']}' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'snaily-cadv4')\gexec"`)
+        execSync(`psql -h localhost -d postgres -U postgres -c "CREATE USER snailycad WITH PASSWORD '${data['POSTGRES_PASSWORD']}' SUPERUSER"`)
+        execSync(`psql -h localhost -d postgres -U postgres -c "SELECT 'CREATE DATABASE snaily-cadv4 WITH OWNER = ${data['POSTGRES_USER']}' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'snaily-cadv4')\gexec"`)
 
         execSync(`git clone https://github.com/SnailyCAD/snaily-cadv4.git`)
         execSync(`cp snaily-cadv4/* .`)
