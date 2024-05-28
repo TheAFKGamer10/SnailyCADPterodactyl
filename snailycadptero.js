@@ -19,6 +19,7 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
             "SECURE_COOKIES_FOR_IFRAME": args[8]
         };
 
+        execSync(`cd /mnt/server`)
         execSync(`apt update`)
         execSync(`apt install git node postgresql-14 postgresql-contrib`)
         execSync(`npm install -g pnpm`);
