@@ -27,9 +27,21 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
         execSync(`service postgresql start`, { stdio: 'inherit' });
 
         execSync(`echo "Adding User"`, { stdio: 'inherit' });
-        execSync(`DEBIAN_FRONTEND=noninteractive psql -h localhost -d postgres -U postgres -c "CREATE USER snailycad WITH PASSWORD '${data['POSTGRES_PASSWORD']}' WITH SUPERUSER"`, { stdio: 'inherit' });
+        execSync(`DEBIAN_FRONTEND=noninteractive psql -h localhost -d postgres -U postgres -c "CREATE USER snailycad WITH PASSWORD '${data['POSTGRES_PASSWORD']};'"`, { stdio: 'inherit' });
+        execSync(`echo "Granting Privileges"`, { stdio: 'inherit' });
+        execSync(`DEBIAN_FRONTEND=noninteractive psql -h localhost -d postgres -U postgres -c "ALTER USER snailycad WITH SUPERUSER;"`, { stdio: 'inherit' });
         execSync(`echo "Making Database"`, { stdio: 'inherit' });
-        execSync(`DEBIAN_FRONTEND=noninteractive psql -h localhost -d postgres -U postgres -c "SELECT 'CREATE DATABASE snaily-cadv4 WITH OWNER = ${data['POSTGRES_USER']}' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'snaily-cadv4')\gexec"`, { stdio: 'inherit' });
+        execSync(`DEBIAN_FRONTEND=noninteractive psql -h localhost -d postgres -U postgres -c "DO
+        $do$
+        BEGIN
+           IF NOT EXISTS (
+              SELECT FROM pg_database
+              WHERE datname = 'snaily-cadv4'
+           ) THEN
+              EXECUTE 'CREATE DATABASE snaily-cadv4 WITH OWNER = ' || quote_ident('${data['POSTGRES_USER']}');
+           END IF;
+        END
+        $do$;"`, { stdio: 'inherit' });
 
         execSync(`echo "Cloning"`, { stdio: 'inherit' });
         execSync(`git clone https://github.com/SnailyCAD/snaily-cadv4.git`, { stdio: 'inherit' });
