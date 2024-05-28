@@ -21,7 +21,7 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
 
         execSync(`cd /mnt/server`)
         execSync(`apt update`)
-        execSync(`apt install git node postgresql-14 postgresql-contrib -y`)
+        execSync(`apt install postgresql postgresql-contrib -y`)
         execSync(`npm install -g pnpm`);
         execSync(`systemctl start postgresql.service`)
         execSync(`systemctl enable postgresql.service`)
