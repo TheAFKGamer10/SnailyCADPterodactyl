@@ -25,13 +25,18 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
         execSync(`npm install -g pnpm`);
         execSync(`service postgresql start`)
 
+        execSync(`echo "Adding User"`)
         execSync(`psql -h localhost -d postgres -U postgres -c "CREATE USER snailycad WITH PASSWORD '${data['POSTGRES_PASSWORD']}' WITH SUPERUSER"`)
+        execSync(`echo "Making Database"`)
         execSync(`psql -h localhost -d postgres -U postgres -c "SELECT 'CREATE DATABASE snaily-cadv4 WITH OWNER = ${data['POSTGRES_USER']}' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'snaily-cadv4')\gexec"`)
 
+        execSync(`echo "Cloning"`)
         execSync(`git clone https://github.com/SnailyCAD/snaily-cadv4.git`)
         execSync(`cp snaily-cadv4/* .`)
+        execSync(`echo "Installing Dependicies"`)
         execSync(`pnpm install`)
         execSync(`cp .env.example .env`)
+        execSync(`echo "Changing ENV"`)
 
         try {
             let envdir = './snaily-cadv4/.env';
@@ -51,8 +56,8 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
         }
 
         execSync(`node scripts/copy-env.mjs --client --api`)
+        execSync(`echo "Building"`)
         execSync(`pnpm run build`)
-        execSync(`pnpm run start`)
     })
     .catch(error => {
         console.error('Error:', error);
