@@ -21,7 +21,8 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
 
         execSync(`cd /mnt/server`)
         execSync(`apt update`)
-        execSync(`DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends apt-utils postgresql postgresql-contrib -y`)
+        execSync(`DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends apt-utils -y`)
+        execSync(`DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends postgresql postgresql-contrib -y`)
         execSync(`DEBIAN_FRONTEND=noninteractive npm install -g pnpm`);
         execSync(`service postgresql start`)
 
@@ -62,4 +63,3 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
     .catch(error => {
         console.error('Error:', error);
     });
-    
