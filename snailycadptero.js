@@ -3,20 +3,20 @@ const execSync = require('child_process').execSync;
 
 fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&loweralpha=on&unique=on&format=plain')
     .then(response => response.text())
-    .then(data => {
+    .then(pass => {
         const args = process.argv.slice(2);
         const data = {
             "POSTGRES_PASSWORD": args[0],
             "POSTGRES_USER": args[1],
-            "JWT_SECRET": args[2],
-            "ENCRYPTION_TOKEN": args[2],
-            "CORS_ORIGIN_URL": args[3],
-            "NEXT_PUBLIC_CLIENT_URL": args[3],
-            "NEXT_PUBLIC_PROD_ORIGIN": args[4],
-            "PORT_CLIENT": args[5],
-            "PORT_API": args[6],
-            "DOMAIN": args[7],
-            "SECURE_COOKIES_FOR_IFRAME": args[8]
+            "JWT_SECRET": pass,
+            "ENCRYPTION_TOKEN": pass,
+            "CORS_ORIGIN_URL": args[2],
+            "NEXT_PUBLIC_CLIENT_URL": args[2],
+            "NEXT_PUBLIC_PROD_ORIGIN": args[3],
+            "PORT_CLIENT": args[4],
+            "PORT_API": args[5],
+            "DOMAIN": args[6],
+            "SECURE_COOKIES_FOR_IFRAME": args[7]
         };
 
         execSync(`cd /mnt/server`)
