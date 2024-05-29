@@ -8,8 +8,8 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
         const data = {
             "POSTGRES_PASSWORD": args[0],
             "POSTGRES_USER": args[1],
-            "JWT_SECRET": pass,
-            "ENCRYPTION_TOKEN": pass,
+            "JWT_SECRET": pass.trim().replace(/\n/g, '').replace(/\r/g, ''),
+            "ENCRYPTION_TOKEN": pass.trim().replace(/\n/g, '').replace(/\r/g, ''),
             "CORS_ORIGIN_URL": args[2],
             "NEXT_PUBLIC_CLIENT_URL": args[2],
             "NEXT_PUBLIC_PROD_ORIGIN": args[3],
@@ -58,6 +58,9 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
         execSync(`node scripts/copy-env.mjs --client --api`, { stdio: 'inherit' });
         execSync(`echo "Building"`, { stdio: 'inherit' });
         execSync(`pnpm run build`, { stdio: 'inherit' });
+
+        execSync(`cd /home/container`, { stdio: 'inherit' });
+        execSync(`npm install -g pnpm`, { stdio: 'inherit' });
     })
     .catch(error => {
         console.error('Error:', error);
