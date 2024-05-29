@@ -32,7 +32,7 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
 
         execSync(`echo "Cloning"`, { stdio: 'inherit' });
         execSync(`git clone https://github.com/SnailyCAD/snaily-cadv4.git`, { stdio: 'inherit' });
-        execSync(`cp -rf snaily-cadv4/* .`, { stdio: 'inherit' });
+        execSync(`cp -rf snaily-cadv4/. .`, { stdio: 'inherit' });
         execSync(`echo "Installing Dependicies"`, { stdio: 'inherit' });
         execSync(`DEBIAN_FRONTEND=noninteractive pnpm install`, { stdio: 'inherit' });
         execSync(`cp -rf .env.example .env`, { stdio: 'inherit' });
