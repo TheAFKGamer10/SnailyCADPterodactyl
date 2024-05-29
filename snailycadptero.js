@@ -34,7 +34,7 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
         execSync(`git clone https://github.com/SnailyCAD/snaily-cadv4.git`, { stdio: 'inherit' });
         execSync(`cp -rf snaily-cadv4/. .`, { stdio: 'inherit' });
         execSync(`echo "Installing Dependicies"`, { stdio: 'inherit' });
-        execSync(`DEBIAN_FRONTEND=noninteractive pnpm install`, { stdio: 'inherit' });
+        execSync(`pnpm install`, { stdio: 'inherit' });
         execSync(`cp -rf .env.example .env`, { stdio: 'inherit' });
         execSync(`echo "Changing ENV"`, { stdio: 'inherit' });
 
@@ -57,7 +57,7 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
 
         execSync(`node scripts/copy-env.mjs --client --api`, { stdio: 'inherit' });
         execSync(`echo "Building"`, { stdio: 'inherit' });
-        execSync(`DEBIAN_FRONTEND=noninteractive pnpm run build`, { stdio: 'inherit' });
+        execSync(`pnpm run build`, { stdio: 'inherit' });
     })
     .catch(error => {
         console.error('Error:', error);
