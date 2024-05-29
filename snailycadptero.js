@@ -22,7 +22,6 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
         execSync(`cd /mnt/server`, { stdio: 'inherit' });
         execSync(`apt update`, { stdio: 'inherit' });
         execSync(`DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends postgresql postgresql-contrib -y`, { stdio: 'inherit' });
-        execSync(`npm install -g pnpm`, { stdio: 'inherit' });
         execSync(`service postgresql start`, { stdio: 'inherit' });
 
         execSync(`echo "Adding User"`, { stdio: 'inherit' });
@@ -53,7 +52,7 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
             console.error('Error:', error);
         }
 
-        execSync(`node scripts/copy-env.mjs --client --api`, { stdio: 'inherit' });
+        execSync(`/usr/local/bin/node scripts/copy-env.mjs --client --api`, { stdio: 'inherit' });
 })
     .catch(error => {
         console.error('Error:', error);
