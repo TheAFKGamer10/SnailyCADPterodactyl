@@ -58,6 +58,7 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
         execSync(`node scripts/copy-env.mjs --client --api`, { stdio: 'inherit' });
         execSync(`echo "Building"`, { stdio: 'inherit' });
         execSync(`pnpm run build`, { stdio: 'inherit' });
+})
     .catch(error => {
         console.error('Error:', error);
     });
