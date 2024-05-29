@@ -22,7 +22,7 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
         execSync(`cd /mnt/server`, { stdio: 'inherit' });
         execSync(`apt update`, { stdio: 'inherit' });
         execSync(`DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends sudo postgresql postgresql-contrib -y`, { stdio: 'inherit' });
-        execSync(`npm install -g pnpm`, { stdio: 'inherit' });;
+        execSync(`npm install -g pnpm`, { stdio: 'inherit' });
         execSync(`service postgresql start`, { stdio: 'inherit' });
 
         execSync(`echo "Adding User"`, { stdio: 'inherit' });
@@ -58,6 +58,9 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
         execSync(`node scripts/copy-env.mjs --client --api`, { stdio: 'inherit' });
         execSync(`echo "Building"`, { stdio: 'inherit' });
         execSync(`pnpm run build`, { stdio: 'inherit' });
+        
+        execSync(`npm install npm`, { stdio: 'inherit' });
+        execSync(`npm install pnpm`, { stdio: 'inherit' });
 })
     .catch(error => {
         console.error('Error:', error);
