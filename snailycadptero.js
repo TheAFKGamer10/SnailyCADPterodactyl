@@ -26,10 +26,9 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
         execSync(`service postgresql start`, { stdio: 'inherit' });
 
         execSync(`echo "Adding User"`, { stdio: 'inherit' });
-        execSync(`sudo -i -u postgres`)
-        execSync(`sudo -i -u postgres psql -h localhost -d postgres -U postgres -c "CREATE USER snailycad WITH PASSWORD '${data['POSTGRES_PASSWORD']}' WITH SUPERUSER;"`, { stdio: 'inherit' });
+        execSync(`sudo -i -u postgres psql -d postgres -c "CREATE USER snailycad WITH PASSWORD '${data['POSTGRES_PASSWORD']}' WITH SUPERUSER;"`, { stdio: 'inherit' });
         execSync(`echo "Making Database"`, { stdio: 'inherit' });
-        execSync(`sudo -i -u postgres psql -h localhost -d postgres -U postgres -c "DO
+        execSync(`sudo -i -u postgres psql -d postgres -c "DO
         $do$
         BEGIN
            IF NOT EXISTS (
