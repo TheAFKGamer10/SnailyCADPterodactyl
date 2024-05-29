@@ -35,7 +35,7 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
         execSync(`cp snaily-cadv4/* .`, { stdio: 'inherit' });
         execSync(`echo "Installing Dependicies"`, { stdio: 'inherit' });
         execSync(`DEBIAN_FRONTEND=noninteractive pnpm install`, { stdio: 'inherit' });
-        execSync(`cp .env.example .env`, { stdio: 'inherit' });
+        execSync(`cp -rf .env.example .env`, { stdio: 'inherit' });
         execSync(`echo "Changing ENV"`, { stdio: 'inherit' });
 
         try {
