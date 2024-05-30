@@ -68,7 +68,7 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
             console.error('Error:', error);
         }
 
-        execSync(`/usr/local/bin/pnpm install`, { stdio: 'inherit' });
+        execSync(`/home/container/.local/share/pnpm/pnpm install`, { stdio: 'inherit' });
         execSync(`/usr/local/bin/node scripts/copy-env.mjs --client --api`, { stdio: 'inherit' });
 })
     .catch(error => {
