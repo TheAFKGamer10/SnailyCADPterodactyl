@@ -54,12 +54,39 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
             console.error('Error:', error);
         }
 
+        execSync(`echo "Updateing pnpm locations"`, { stdio: 'inherit' });
         try {
             let envdir = './package.json';
             let fileContent = fs.readFileSync(envdir, 'utf-8');
             let fileLines = fileContent.split('\n');
             for (let i = 0; i < fileLines.length; i++) {
                 if (fileLines[i].includes('pnpm')) {
+                    fileLines[i] = fileLines[i].replace(/pnpm/g, '/home/container/.local/share/pnpm/pnpm');
+                }
+            }
+            fs.writeFileSync(envdir, fileLines.join('\n'));
+        } catch (error) {
+            console.error('Error:', error);
+        }
+        try {
+            let envdir = './apps/api/package.json';
+            let fileContent = fs.readFileSync(envdir, 'utf-8');
+            let fileLines = fileContent.split('\n');
+            for (let i = 0; i < fileLines.length; i++) {
+                if (fileLines[i].includes('pnpm')) {
+                    fileLines[i] = fileLines[i].replace(/pnpm/g, '/home/container/.local/share/pnpm/pnpm');
+                }
+            }
+            fs.writeFileSync(envdir, fileLines.join('\n'));
+        } catch (error) {
+            console.error('Error:', error);
+        }
+        try {
+            let envdir = './apps/client/package.json';
+            let fileContent = fs.readFileSync(envdir, 'utf-8');
+            let fileLines = fileContent.split('\n');
+            for (let i = 0; i < fileLines.length; i++) {
+                if (fileLines[i].includes('pnpm') && !fileLines[i].includes(`"pnpm"`)) {
                     fileLines[i] = fileLines[i].replace(/pnpm/g, '/home/container/.local/share/pnpm/pnpm');
                 }
             }
