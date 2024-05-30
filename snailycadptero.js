@@ -22,16 +22,18 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
         execSync(`cd /mnt/server`, { stdio: 'inherit' });
         execSync(`apt update`, { stdio: 'inherit' });
         execSync(`DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends sudo postgresql postgresql-contrib -y`, { stdio: 'inherit' });
+        execSync(`npm install -g pnpm`, { stdio: 'inherit' });
         execSync(`service postgresql start`, { stdio: 'inherit' });
 
         execSync(`echo "Adding User"`, { stdio: 'inherit' });
         execSync(`sudo -i -u postgres psql -d postgres -c "CREATE USER snailycad WITH PASSWORD '${data['POSTGRES_PASSWORD']}' SUPERUSER;"`, { stdio: 'inherit' });
         execSync(`echo "Making Database"`, { stdio: 'inherit' });
-        execSync(`sudo -i -u postgres createdb -O snailycad snaily-cadv4 -T template0`, { stdio: 'inherit' });
+        execSync(`sudo -i -u postgres createdb -O snailycad snaily-cad-v4 -T template0`, { stdio: 'inherit' });
 
         execSync(`echo "Cloning"`, { stdio: 'inherit' });
         execSync(`git clone https://github.com/SnailyCAD/snaily-cadv4.git`, { stdio: 'inherit' });
         execSync(`cp -rf snaily-cadv4/. .`, { stdio: 'inherit' });
+        execSync(`rm -rf snaily-cadv4`, { stdio: 'inherit' });
         execSync(`cp -rf .env.example .env`, { stdio: 'inherit' });
         execSync(`echo "Changing ENV"`, { stdio: 'inherit' });
 
@@ -51,6 +53,7 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
         } catch (error) {
             console.error('Error:', error);
         }
+        
         execSync(`/usr/local/bin/pnpm install`, { stdio: 'inherit' });
         execSync(`/usr/local/bin/node scripts/copy-env.mjs --client --api`, { stdio: 'inherit' });
 })
