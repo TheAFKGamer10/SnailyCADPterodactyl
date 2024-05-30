@@ -31,7 +31,6 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
         execSync(`sudo -i -u postgres createdb -O snailycad snaily-cad-v4 -T template0`, { stdio: 'inherit' });
 
         execSync(`echo "Cloning"`, { stdio: 'inherit' });
-        execSync(`rm -rf snaily-cadv4`, { stdio: 'inherit' });
         execSync(`git clone https://github.com/SnailyCAD/snaily-cadv4.git`, { stdio: 'inherit' });
         execSync(`cp -rf snaily-cadv4/. .`, { stdio: 'inherit' });
         execSync(`rm -rf snaily-cadv4`, { stdio: 'inherit' });
