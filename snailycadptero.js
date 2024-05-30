@@ -53,7 +53,21 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
         } catch (error) {
             console.error('Error:', error);
         }
-        
+
+        try {
+            let envdir = './package.json';
+            let fileContent = fs.readFileSync(envdir, 'utf-8');
+            let fileLines = fileContent.split('\n');
+            for (let i = 0; i < fileLines.length; i++) {
+                if (fileLines[i].includes('pnpm')) {
+                    fileLines[i] = fileLines[i].replace(/pnpm/g, '/home/container/.local/share/pnpm/pnpm');
+                }
+            }
+            fs.writeFileSync(envdir, fileLines.join('\n'));
+        } catch (error) {
+            console.error('Error:', error);
+        }
+
         execSync(`/usr/local/bin/pnpm install`, { stdio: 'inherit' });
         execSync(`/usr/local/bin/node scripts/copy-env.mjs --client --api`, { stdio: 'inherit' });
 })
