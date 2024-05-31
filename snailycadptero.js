@@ -61,7 +61,7 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
             let fileContent = fs.readFileSync(envdir, 'utf-8');
             let fileLines = fileContent.split('\n');
             for (let i = 0; i < fileLines.length; i++) {
-                if (fileLines[i].includes('pnpm')) {
+                if (fileLines[i].includes('pnpm') && !fileLines[i].includes(`"pnpm"`)) {
                     fileLines[i] = fileLines[i].replace(/pnpm/g, '/home/container/.local/share/pnpm/pnpm');
                 }
             }
@@ -74,7 +74,7 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
             let fileContent = fs.readFileSync(envdir, 'utf-8');
             let fileLines = fileContent.split('\n');
             for (let i = 0; i < fileLines.length; i++) {
-                if (fileLines[i].includes('pnpm')) {
+                if (fileLines[i].includes('pnpm') && !fileLines[i].includes(`"pnpm"`)) {
                     fileLines[i] = fileLines[i].replace(/pnpm/g, '/home/container/.local/share/pnpm/pnpm');
                 }
             }
