@@ -21,6 +21,8 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
 
         execSync(`cd /mnt/server`, { stdio: 'inherit' });
         execSync(`DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends sudo postgresql postgresql-contrib -y`, { stdio: 'inherit' });
+        // execSync(`npm install -g pnpm`, { stdio: 'inherit' });
+        execSync(`service postgresql start`, { stdio: 'inherit' });
 
         execSync(`echo "Adding User"`, { stdio: 'inherit' });
         execSync(`sudo -i -u postgres psql -d postgres -c "CREATE USER snailycad WITH PASSWORD '${data['POSTGRES_PASSWORD']}' SUPERUSER;"`, { stdio: 'inherit' });
@@ -47,19 +49,6 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
                 }
                 fs.writeFileSync(envdir, fileLines.join('\n'));
             });
-        } catch (error) {
-            console.error('Error:', error);
-        }
-        try {
-            let envdir = './apps/client/package.json';
-            let fileContent = fs.readFileSync(envdir, 'utf-8');
-            let fileLines = fileContent.split('\n');
-            for (let i = 0; i < fileLines.length; i++) {
-                if (fileLines[i].includes('pnpm') && !fileLines[i].includes(`"pnpm"`)) {
-                    fileLines[i] = fileLines[i].replace(/pnpm/g, '/home/container/.local/share/pnpm/pnpm');
-                }
-            }
-            fs.writeFileSync(envdir, fileLines.join('\n'));
         } catch (error) {
             console.error('Error:', error);
         }

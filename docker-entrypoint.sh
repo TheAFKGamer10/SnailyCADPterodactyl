@@ -1,7 +1,3 @@
-#
-# Postgres
-# 
-
 #!/usr/bin/env bash
 set -Eeo pipefail
 # TODO swap to -Eeuo pipefail above (after handling all potentially-unset variables)
@@ -314,7 +310,7 @@ _main() {
 		docker_create_db_directories
 		if [ "$(id -u)" = '0' ]; then
 			# then restart script as postgres user
-			exec gosu postgres "$BASH_SOURCE" "$@"
+			exec su-exec postgres "$BASH_SOURCE" "$@"
 		fi
 
 		# only run initialization on an empty data directory
@@ -358,29 +354,3 @@ _main() {
 if ! _is_sourced; then
 	_main "$@"
 fi
-
-
-
-
-#
-# Node
-#
-
-#!/bin/bash
-cd /home/container
-
-# Make internal Docker IP address available to processes.
-INTERNAL_IP=$(ip route get 1 | awk '{print $(NF-2);exit}')
-export INTERNAL_IP
-
-# Print Node.js Version
-node --version
-postgres --version
-pnpm --version
-
-# Replace Startup Variables
-MODIFIED_STARTUP=$(echo -e ${STARTUP} | sed -e 's/{{/${/g' -e 's/}}/}/g')
-echo ":/home/container$ ${MODIFIED_STARTUP}"
-
-# Run the Server
-eval ${MODIFIED_STARTUP}
