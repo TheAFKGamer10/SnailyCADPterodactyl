@@ -9,8 +9,8 @@ RUN         useradd -m -d /home/container container
 RUN         npm install npm typescript ts-node @types/node --location=global
 RUN         npm install pnpm --location=global
 
-COPY        --chown=container:container ./entrypoint.sh /entrypoint.sh
-RUN         chmod +x /entrypoint.sh
+# COPY        --chown=container:container ./entrypoint.sh /entrypoint.sh
+# RUN         chmod +x /entrypoint.sh
 
 
 
@@ -154,7 +154,6 @@ USER        container
 ENV         USER=container HOME=/home/container
 WORKDIR     /home/container
 
-STOPSIGNAL SIGINT
 STOPSIGNAL SIGINT
 WORKDIR     /home/container
 # ENTRYPOINT    ["/usr/bin/tini", "-g", "--"]
