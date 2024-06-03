@@ -157,5 +157,6 @@ WORKDIR     /home/container
 STOPSIGNAL SIGINT
 STOPSIGNAL SIGINT
 WORKDIR     /home/container
-ENTRYPOINT    ["/usr/bin/tini", "-g", "--"]
-CMD         ["/entrypoint.sh" , "&&", "postgres"]
+# ENTRYPOINT    ["/usr/bin/tini", "-g", "--"]
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD         ["postgres"]
