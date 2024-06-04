@@ -3,12 +3,13 @@ FROM        --platform=$TARGETOS/$TARGETARCH node:18
 LABEL       author="TheAFKGamer10" maintainer="mail@afkhosting.win"
 
 RUN         apt update
-RUN         apt -y --fix-missing install ffmpeg iproute2 git sqlite3 libsqlite3-dev python3 python3-dev ca-certificates dnsutils tzdata zip tar curl build-essential libtool iputils-ping libnss3 tini fontconfig openssl sqlite3 tar
+RUN         apt -y --fix-missing install ffmpeg iproute2 git sqlite3 libsqlite3-dev python3 python3-dev ca-certificates dnsutils tzdata zip tar curl build-essential libtool iputils-ping libnss3 tini fontconfig openssl sqlite3 tar sudo wget
 RUN         useradd -m -d /home/container container
 
 RUN         npm install npm typescript ts-node @types/node --location=global
 RUN         npm install pnpm --location=global
 
+STOPSIGNAL SIGINT
 # COPY        --chown=container:container ./entrypoint.sh /entrypoint.sh
 # RUN         chmod +x /entrypoint.sh
 
@@ -19,21 +20,21 @@ RUN         npm install pnpm --location=global
 
 RUN set -eux \
 &&	groupadd -r postgres --gid=1999 \
-&&	useradd -r -g postgres --uid=1999 --home-dir=/var/lib/postgresql --shell=/bin/bash postgres \
-&&	mkdir -p /var/lib/postgresql \
-&&	chown -R postgres:postgres /var/lib/postgresql
+&&	useradd -r -g postgres --uid=1999 --home-dir=/home/container/postgresql --shell=/bin/bash postgres \
+&&	mkdir -p /home/container/postgresql \
+&&	chown -R postgres:postgres /home/container/postgresql
 
 RUN set -ex \
 &&	apt-get update \
 &&	apt-get install -y --no-install-recommends gnupg less \
-&&	rm -rf /var/lib/apt/lists/*
+&&	rm -rf /home/container/apt/lists/*
 
 ENV GOSU_VERSION 1.17
 RUN set -eux \
 &&	savedAptMark="$(apt-mark showmanual)" \
 &&	apt-get update \
 &&	apt-get install -y --no-install-recommends ca-certificates wget \
-&&	rm -rf /var/lib/apt/lists/* \
+&&	rm -rf /home/container/apt/lists/* \
 &&	dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')" \
 &&	wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch" \
 &&	wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc" \
@@ -56,7 +57,7 @@ RUN set -eux \
         ! grep -q '/usr/share/locale' /etc/dpkg/dpkg.cfg.d/docker; \
     fi \
 &&	apt-get update; apt-get install -y --no-install-recommends locales \
-&&    rm -rf /var/lib/apt/lists/* \
+&&    rm -rf /home/container/apt/lists/* \
 &&	echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen \
 &&	locale-gen \
 &&	locale -a | grep 'en_US.utf8'
@@ -69,7 +70,7 @@ RUN set -eux \
 		xz-utils \
 		zstd \
 	 \
-&&	rm -rf /var/lib/apt/lists/*
+&&	rm -rf /home/container/apt/lists/*
 
 RUN mkdir /docker-entrypoint-initdb.d
 
@@ -124,7 +125,7 @@ RUN set -ex \
 &&	apt-get install -y --no-install-recommends postgresql-common \
 &&	sed -ri 's/#(create_main_cluster) .*$/\1 = false/' /etc/postgresql-common/createcluster.conf \
 &&	apt-get install -y --no-install-recommends "postgresql-$PG_MAJOR=$PG_VERSION" \
-&&	rm -rf /var/lib/apt/lists/* \
+&&	rm -rf /home/container/apt/lists/* \
 &&	if [ -n "$tempDir" ]; then \
     apt-get purge -y --auto-remove \
     && rm -rf "$tempDir" /etc/apt/sources.list.d/temp.list ; fi \
@@ -139,9 +140,9 @@ RUN set -eux \
 
 RUN mkdir -p /var/run/postgresql && chown -R postgres:postgres /var/run/postgresql && chmod 3777 /var/run/postgresql
 
-ENV PGDATA /var/lib/postgresql/data
+ENV PGDATA /home/container/postgresql/data
 RUN mkdir -p "$PGDATA" && chown -R postgres:postgres "$PGDATA" && chmod 1777 "$PGDATA"
-VOLUME /var/lib/postgresql/data
+VOLUME /home/container/postgresql/data
 
 COPY docker-entrypoint.sh docker-ensure-initdb.sh /usr/local/bin/
 RUN ln -sT docker-ensure-initdb.sh /usr/local/bin/docker-enforce-initdb.sh
@@ -149,13 +150,18 @@ RUN ln -sT docker-ensure-initdb.sh /usr/local/bin/docker-enforce-initdb.sh
 EXPOSE 5432
 
 
-
 USER        container
 ENV         USER=container HOME=/home/container
 WORKDIR     /home/container
 
-STOPSIGNAL SIGINT
-WORKDIR     /home/container
-# ENTRYPOINT    ["/usr/bin/tini", "-g", "--"]
+# Initialize the database
+USER root
+RUN su - postgres -c "/usr/lib/postgresql/$PG_MAJOR/bin/initdb -D /home/container/postgresql/data"
+
+# Set up the entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD         ["postgres"]
+
+# Start the PostgreSQL server when the container is run
+CMD ["/usr/lib/postgresql/$PG_MAJOR/bin/postgres", "-D", "/home/container/postgresql/data"]

@@ -52,7 +52,7 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
             console.error('Error:', error);
         }
 
-        execSync(`sudo su - postgres -c "initdb -D /var/lib/postgresql/data"`, { stdio: 'inherit' });
+        execSync(`sudo su - postgres -c "postgres --single -D /var/lib/postgresql/data -c config_file=/etc/postgresql/$PG_MAJOR/main/postgresql.conf CREATE USER container WITH SUPERUSER PASSWORD 'container';"`, { stdio: 'inherit' });
 })
     .catch(error => {
         console.error('Error:', error);
