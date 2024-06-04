@@ -21,8 +21,7 @@ STOPSIGNAL SIGINT
 RUN set -eux \
 &&	groupadd -r postgres --gid=1999 \
 &&	useradd -r -g postgres --uid=1999 --home-dir=/home/container/postgresql --shell=/bin/bash postgres \
-&&	mkdir -p /home/container/postgresql \
-&&	chown -R postgres:postgres /home/container/postgresql
+&&	mkdir -p /home/container/postgresql
 
 RUN set -ex \
 &&	apt-get update \
@@ -138,10 +137,10 @@ RUN set -eux \
 &&	sed -ri "s!^#?(listen_addresses)\s*=\s*\S+.*!\1 = '*'!" /usr/share/postgresql/postgresql.conf.sample \
 &&	grep -F "listen_addresses = '*'" /usr/share/postgresql/postgresql.conf.sample
 
-RUN mkdir -p /var/run/postgresql && chown -R postgres:postgres /var/run/postgresql && chmod 3777 /var/run/postgresql
+RUN mkdir -p /var/run/postgresql && chown -R container:container /var/run/postgresql && chmod 3777 /var/run/postgresql
 
 ENV PGDATA /home/container/postgresql/data
-RUN mkdir -p "$PGDATA" && chown -R postgres:postgres "$PGDATA" && chmod 1777 "$PGDATA"
+RUN mkdir -p "$PGDATA" && chown -R container:container "$PGDATA" && chmod 1777 "$PGDATA"
 VOLUME /home/container/postgresql/data
 
 COPY docker-entrypoint.sh docker-ensure-initdb.sh /usr/local/bin/
@@ -149,19 +148,24 @@ RUN ln -sT docker-ensure-initdb.sh /usr/local/bin/docker-enforce-initdb.sh
 
 EXPOSE 5432
 
-
 USER        container
 ENV         USER=container HOME=/home/container
 WORKDIR     /home/container
 
 # Initialize the database
 USER root
-RUN su - postgres -c "/usr/lib/postgresql/$PG_MAJOR/bin/initdb -D /home/container/postgresql/data"
-
-# Set up the entrypoint script
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+RUN mkdir -p /home/container/postgresql/data && chown -R container:container /home/container/postgresql/data
+USER container
+RUN echo "container" > /tmp/pwfile && /bin/bash -c "/usr/lib/postgresql/$PG_MAJOR/bin/initdb -D /home/container/postgresql/data --auth-host=md5 --auth-local=trust --username=container --pwfile=/tmp/pwfile --encoding=UTF8 --data-checksums" && rm /tmp/pwfile
+
+# Ensure that the container user has the necessary permissions
+RUN chown -R container:container /home/container/postgresql/data
+RUN chmod -R 700 /home/container/postgresql/data
+
+# Set up the entrypoint script
 ENTRYPOINT ["docker-entrypoint.sh"]
 
 # Start the PostgreSQL server when the container is run
-CMD ["/usr/lib/postgresql/$PG_MAJOR/bin/postgres", "-D", "/home/container/postgresql/data"]
+CMD ["/usr/lib/postgresql/$PG_MAJOR/bin/postgres", "-D", "/home/container/postgresql/data", "-c", "config_file=/home/container/postgresql/data/postgresql.conf"]
