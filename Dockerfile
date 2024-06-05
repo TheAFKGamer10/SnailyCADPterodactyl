@@ -141,7 +141,7 @@ RUN mkdir -p /var/run/postgresql && chown -R container:container /var/run/postgr
 
 ENV PGDATA /home/container/postgresql/data
 RUN mkdir -p "$PGDATA" && chown -R container:container "$PGDATA" && chmod 1777 "$PGDATA"
-VOLUME /home/container/postgresql/data
+# VOLUME /home/container/postgresql/data
 
 COPY docker-entrypoint.sh docker-ensure-initdb.sh /usr/local/bin/
 RUN ln -sT docker-ensure-initdb.sh /usr/local/bin/docker-enforce-initdb.sh
@@ -158,14 +158,22 @@ COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 RUN mkdir -p /home/container/postgresql/data && chown -R container:container /home/container/postgresql/data
 USER container
-RUN echo "container" > /tmp/pwfile && /bin/bash -c "/usr/lib/postgresql/$PG_MAJOR/bin/initdb -D /home/container/postgresql/data --auth-host=md5 --auth-local=trust --username=container --pwfile=/tmp/pwfile --encoding=UTF8 --data-checksums" && rm /tmp/pwfile
+
+RUN ls -la /home/container/postgresql/data
+RUN whoami
+RUN if [ ! -f /home/container/postgresql/data/postgresql.conf ]; then \
+    echo "container" > /tmp/pwfile && /bin/bash -c "/usr/lib/postgresql/$PG_MAJOR/bin/initdb -D /home/container/postgresql/data --auth-host=md5 --auth-local=trust --username=container --pwfile=/tmp/pwfile --encoding=UTF8 --data-checksums" && rm /tmp/pwfile; \
+    cat /home/container/postgresql/data/postgresql.conf | grep "listen_addresses = '*'" || echo "listen_addresses = '*'" >> /home/container/postgresql/data/postgresql.conf; \
+    cat /home/container/postgresql/data/postgresql.conf | grep "port = 5432" || echo "port = 5432" >> /home/container/postgresql/data/postgresql.conf; \
+  fi
+RUN ls -la /home/container/postgresql/data
 
 # Ensure that the container user has the necessary permissions
 RUN chown -R container:container /home/container/postgresql/data
 RUN chmod -R 700 /home/container/postgresql/data
 
+# Start the PostgreSQL server when the container is run
+CMD ["/usr/lib/postgresql/$PG_MAJOR/bin/postgres", "-D", "/home/container/postgresql/data", "-c", "config_file=/home/container/postgresql/data/postgresql.conf"]
 # Set up the entrypoint script
 ENTRYPOINT ["docker-entrypoint.sh"]
 
-# Start the PostgreSQL server when the container is run
-CMD ["/usr/lib/postgresql/$PG_MAJOR/bin/postgres", "-D", "/home/container/postgresql/data", "-c", "config_file=/home/container/postgresql/data/postgresql.conf"]
