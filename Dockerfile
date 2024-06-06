@@ -73,5 +73,5 @@ RUN         chmod +x /entrypoint.sh
 USER container
 ENV HOME /home/container
 WORKDIR /home/container
-ENTRYPOINT    ["/sbin/tini", "-g", "--"]
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD         ["postgres"]

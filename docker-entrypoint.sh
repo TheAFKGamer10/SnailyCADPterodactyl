@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -Eeo pipefail
+export PGDATA='/home/container/postgresql/data'
 # TODO swap to -Eeuo pipefail above (after handling all potentially-unset variables)
 
 # usage: file_env VAR [DEFAULT]
