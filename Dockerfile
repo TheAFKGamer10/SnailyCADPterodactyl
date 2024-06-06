@@ -1,179 +1,77 @@
-FROM        --platform=$TARGETOS/$TARGETARCH node:18
+#/bin/sh
+# postgresql 16
+FROM --platform=$TARGETOS/$TARGETARCH postgres:16
 
-LABEL       author="TheAFKGamer10" maintainer="mail@afkhosting.win"
+LABEL author="TheAFKGamer10" maintainer="mail@afkhosting.win"
 
-RUN         apt update
-RUN         apt -y --fix-missing install ffmpeg iproute2 git sqlite3 libsqlite3-dev python3 python3-dev ca-certificates dnsutils tzdata zip tar curl build-essential libtool iputils-ping libnss3 tini fontconfig openssl sqlite3 tar sudo wget
-RUN         useradd -m -d /home/container container
+RUN adduser -D -h /home/container container
 
+RUN apt update -y
+RUN apt install -y curl fontconfig openssl ffmpeg iproute2 git sqlite3 libsqlite3-dev python3 python3-dev ca-certificates dnsutils tzdata zip tar build-essential libtool iputils-ping libnss3 tini
+
+STOPSIGNAL SIGINT
+
+# Node.js and pnpm
+RUN groupadd --gid 1000 node \
+  && useradd --uid 1000 --gid node --shell /bin/bash --create-home node
+
+ENV NODE_VERSION 18.20.3
+
+RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" \
+  && case "${dpkgArch##*-}" in \
+    amd64) ARCH='x64';; \
+    ppc64el) ARCH='ppc64le';; \
+    s390x) ARCH='s390x';; \
+    arm64) ARCH='arm64';; \
+    armhf) ARCH='armv7l';; \
+    i386) ARCH='x86';; \
+    *) echo "unsupported architecture"; exit 1 ;; \
+  esac \
+  # use pre-existing gpg directory, see https://github.com/nodejs/docker-node/pull/1895#issuecomment-1550389150
+  && export GNUPGHOME="$(mktemp -d)" \
+  # gpg keys listed at https://github.com/nodejs/node#release-keys
+  && set -ex \
+  && for key in \
+    4ED778F539E3634C779C87C6D7062848A1AB005C \
+    141F07595B7B3FFE74309A937405533BE57C7D57 \
+    74F12602B6F1C4E913FAA37AD3A89613643B6201 \
+    DD792F5973C6DE52C432CBDAC77ABFA00DDBF2B7 \
+    61FC681DFB92A079F1685E77973F295594EC4689 \
+    8FCCA13FEF1D0C2E91008E09770F7A9A5AE15600 \
+    C4F0DFFF4E8C1A8236409D08E73BC641CC11F4C8 \
+    890C08DB8579162FEE0DF9DB8BEAB4DFCF555EF4 \
+    C82FA3AE1CBEDC6BE46B9360C43CEC45C17AB93C \
+    108F52B48DB57BB0CC439B2997B01419BD92F80A \
+    A363A499291CBBC940DD62E41F10027AF002F8B0 \
+    CC68F5A3106FF448322E48ED27F5E38D5B0A215F \
+  ; do \
+      gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys "$key" || \
+      gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "$key" ; \
+  done \
+  && curl -fsSLO --compressed "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-$ARCH.tar.xz" \
+  && curl -fsSLO --compressed "https://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt.asc" \
+  && gpg --batch --decrypt --output SHASUMS256.txt SHASUMS256.txt.asc \
+  && gpgconf --kill all \
+  && rm -rf "$GNUPGHOME" \
+  && grep " node-v$NODE_VERSION-linux-$ARCH.tar.xz\$" SHASUMS256.txt | sha256sum -c - \
+  && tar -xJf "node-v$NODE_VERSION-linux-$ARCH.tar.xz" -C /usr/local --strip-components=1 --no-same-owner \
+  && rm "node-v$NODE_VERSION-linux-$ARCH.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt \
+  && ln -s /usr/local/bin/node /usr/local/bin/nodejs \
+  # smoke tests
+  && node --version \
+  && npm --version
+
+
+# Install pnpm
 RUN         npm install npm typescript ts-node @types/node --location=global
 RUN         npm install pnpm --location=global
 
-STOPSIGNAL SIGINT
-# COPY        --chown=container:container ./entrypoint.sh /entrypoint.sh
-# RUN         chmod +x /entrypoint.sh
 
-
-
-
-
-
-RUN set -eux \
-&&	groupadd -r postgres --gid=1999 \
-&&	useradd -r -g postgres --uid=1999 --home-dir=/home/container/postgresql --shell=/bin/bash postgres \
-&&	mkdir -p /home/container/postgresql
-
-RUN set -ex \
-&&	apt-get update \
-&&	apt-get install -y --no-install-recommends gnupg less \
-&&	rm -rf /home/container/apt/lists/*
-
-ENV GOSU_VERSION 1.17
-RUN set -eux \
-&&	savedAptMark="$(apt-mark showmanual)" \
-&&	apt-get update \
-&&	apt-get install -y --no-install-recommends ca-certificates wget \
-&&	rm -rf /home/container/apt/lists/* \
-&&	dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')" \
-&&	wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch" \
-&&	wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc" \
-&&	export GNUPGHOME="$(mktemp -d)" \
-&&	gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 \
-&&	gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu \
-&&	gpgconf --kill all \
-&&	rm -rf "$GNUPGHOME" /usr/local/bin/gosu.asc \
-&&	apt-mark auto '.*' > /dev/null \
-&&	[ -z "$savedAptMark" ] || apt-mark manual $savedAptMark > /dev/null \
-&&	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
-&&	chmod +x /usr/local/bin/gosu \
-&&	gosu --version \
-&&	gosu nobody true
-
-RUN set -eux \
-&&	if [ -f /etc/dpkg/dpkg.cfg.d/docker ]; then \
-        grep -q '/usr/share/locale' /etc/dpkg/dpkg.cfg.d/docker; \
-        sed -ri '/\/usr\/share\/locale/d' /etc/dpkg/dpkg.cfg.d/docker; \
-        ! grep -q '/usr/share/locale' /etc/dpkg/dpkg.cfg.d/docker; \
-    fi \
-&&	apt-get update; apt-get install -y --no-install-recommends locales \
-&&    rm -rf /home/container/apt/lists/* \
-&&	echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen \
-&&	locale-gen \
-&&	locale -a | grep 'en_US.utf8'
-ENV LANG en_US.utf8
-
-RUN set -eux \
-&&	apt-get update \
-&&	apt-get install -y --no-install-recommends \
-		libnss-wrapper \
-		xz-utils \
-		zstd \
-	 \
-&&	rm -rf /home/container/apt/lists/*
-
-RUN mkdir /docker-entrypoint-initdb.d
-
-RUN set -ex \
-&&	key='B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8' \
-&&	export GNUPGHOME="$(mktemp -d)" \
-&&	mkdir -p /usr/local/share/keyrings/ \
-&&	gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "$key" \
-&&	gpg --batch --export --armor "$key" > /usr/local/share/keyrings/postgres.gpg.asc \
-&&	gpgconf --kill all \
-&&	rm -rf "$GNUPGHOME"
-
-ENV PG_MAJOR 16
-ENV PATH $PATH:/usr/lib/postgresql/$PG_MAJOR/bin
-
-ENV PG_VERSION 16.3-1.pgdg120+1
-
-RUN set -ex \
-&&	export PYTHONDONTWRITEBYTECODE=1 \
-&&	dpkgArch="$(dpkg --print-architecture)" \
-&&	aptRepo="[ signed-by=/usr/local/share/keyrings/postgres.gpg.asc ] http://apt.postgresql.org/pub/repos/apt/ bookworm-pgdg main $PG_MAJOR" \
-&&	case "$dpkgArch" in \
-    amd64 | arm64 | ppc64el | s390x) \
-        echo "deb $aptRepo" > /etc/apt/sources.list.d/pgdg.list \
-        && apt-get update ;; \
-    *) \
-        echo "deb-src $aptRepo" > /etc/apt/sources.list.d/pgdg.list \
-        && savedAptMark="$(apt-mark showmanual)" \
-        && tempDir="$(mktemp -d)" \
-        && cd "$tempDir" \
-        && apt-get update \
-        && apt-get install -y --no-install-recommends dpkg-dev \
-        && echo "deb [ trusted=yes ] file://$tempDir ./" > /etc/apt/sources.list.d/temp.list \
-        && _update_repo() { \
-        dpkg-scanpackages . > Packages \
-        && apt-get -o Acquire::GzipIndexes=false update ; } \
-        && _update_repo \
-        && nproc="$(nproc)" \
-        && export DEB_BUILD_OPTIONS="nocheck parallel=$nproc" \
-        && apt-get build-dep -y postgresql-common pgdg-keyring \
-        && apt-get source --compile postgresql-common pgdg-keyring \
-        && _update_repo \
-        && apt-get build-dep -y "postgresql-$PG_MAJOR=$PG_VERSION" \
-        && apt-get source --compile "postgresql-$PG_MAJOR=$PG_VERSION" \
-        && apt-mark showmanual | xargs apt-mark auto > /dev/null \
-        && apt-mark manual $savedAptMark \
-        && ls -lAFh \
-        && _update_repo \
-        && grep '^Package: ' Packages \
-        && cd / ;; \
-    esac \
-&&	apt-get install -y --no-install-recommends postgresql-common \
-&&	sed -ri 's/#(create_main_cluster) .*$/\1 = false/' /etc/postgresql-common/createcluster.conf \
-&&	apt-get install -y --no-install-recommends "postgresql-$PG_MAJOR=$PG_VERSION" \
-&&	rm -rf /home/container/apt/lists/* \
-&&	if [ -n "$tempDir" ]; then \
-    apt-get purge -y --auto-remove \
-    && rm -rf "$tempDir" /etc/apt/sources.list.d/temp.list ; fi \
-&&	find /usr -name '*.pyc' -type f -exec bash -c 'for pyc; do dpkg -S "$pyc" &> /dev/null || rm -vf "$pyc"; done' -- '{}' + \
-&&	postgres --version
-RUN set -eux \
-&&	dpkg-divert --add --rename --divert "/usr/share/postgresql/postgresql.conf.sample.dpkg" "/usr/share/postgresql/$PG_MAJOR/postgresql.conf.sample" \
-&&	cp -v /usr/share/postgresql/postgresql.conf.sample.dpkg /usr/share/postgresql/postgresql.conf.sample \
-&&	ln -sv ../postgresql.conf.sample "/usr/share/postgresql/$PG_MAJOR/" \
-&&	sed -ri "s!^#?(listen_addresses)\s*=\s*\S+.*!\1 = '*'!" /usr/share/postgresql/postgresql.conf.sample \
-&&	grep -F "listen_addresses = '*'" /usr/share/postgresql/postgresql.conf.sample
-
-RUN mkdir -p /var/run/postgresql && chown -R container:container /var/run/postgresql && chmod 3777 /var/run/postgresql
-
-ENV PGDATA /home/container/postgresql/data
-RUN mkdir -p "$PGDATA" && chown -R container:container "$PGDATA" && chmod 1777 "$PGDATA"
-# VOLUME /home/container/postgresql/data
-
-COPY docker-entrypoint.sh docker-ensure-initdb.sh /usr/local/bin/
-RUN ln -sT docker-ensure-initdb.sh /usr/local/bin/docker-enforce-initdb.sh
-
-EXPOSE 5432
-
-USER        container
-ENV         USER=container HOME=/home/container
-WORKDIR     /home/container
-
-# Initialize the database
-USER root
-COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-RUN mkdir -p /home/container/postgresql/data && chown -R container:container /home/container/postgresql/data
+# Final Commands
+COPY        --chown=container:container ./entrypoint.sh /entrypoint.sh
+RUN         chmod +x /entrypoint.sh
 USER container
-
-RUN ls -la /home/container/postgresql/data
-RUN whoami
-RUN if [ ! -f /home/container/postgresql/data/postgresql.conf ]; then \
-    echo "container" > /tmp/pwfile && /bin/bash -c "/usr/lib/postgresql/$PG_MAJOR/bin/initdb -D /home/container/postgresql/data --auth-host=md5 --auth-local=trust --username=container --pwfile=/tmp/pwfile --encoding=UTF8 --data-checksums" && rm /tmp/pwfile; \
-    cat /home/container/postgresql/data/postgresql.conf | grep "listen_addresses = '*'" || echo "listen_addresses = '*'" >> /home/container/postgresql/data/postgresql.conf; \
-    cat /home/container/postgresql/data/postgresql.conf | grep "port = 5432" || echo "port = 5432" >> /home/container/postgresql/data/postgresql.conf; \
-  fi
-RUN ls -la /home/container/postgresql/data
-
-# Ensure that the container user has the necessary permissions
-RUN chown -R container:container /home/container/postgresql/data
-RUN chmod -R 700 /home/container/postgresql/data
-
-# Start the PostgreSQL server when the container is run
-CMD ["/usr/lib/postgresql/$PG_MAJOR/bin/postgres", "-D", "/home/container/postgresql/data", "-c", "config_file=/home/container/postgresql/data/postgresql.conf"]
-# Set up the entrypoint script
-ENTRYPOINT ["docker-entrypoint.sh"]
-
+ENV HOME /home/container
+WORKDIR /home/container
+ENTRYPOINT    ["/sbin/tini", "-g", "--"]
+CMD         ["postgres"]
