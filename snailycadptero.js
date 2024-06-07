@@ -25,7 +25,7 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
         execSync(`git clone https://github.com/SnailyCAD/snaily-cadv4.git`, { stdio: 'inherit' });
         execSync(`cp -rf snaily-cadv4/. .`, { stdio: 'inherit' });
         execSync(`rm -rf snaily-cadv4`, { stdio: 'inherit' });
-        execSync(`cp -rf .env.example .env`, { stdio: 'inherit' });
+        execSync(`cp .env.example .env`, { stdio: 'inherit' });
         execSync(`echo "Changing ENV"`, { stdio: 'inherit' });
 
         try {
