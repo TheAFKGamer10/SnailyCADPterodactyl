@@ -208,41 +208,6 @@ docker_process_sql() {
 	PGHOST= PGHOSTADDR= "${query_runner[@]}" "$@"
 }
 
-# createsnaily() {
-# 	echo "Attempting to create role ${POSTGRES_USER} WITH PASSWORD '${POSTGRES_PASSWORD}'..."
-# 	# psql -h /home/container/postgresql/service -u "container" <<-EOSQL
-# 	# 	DO \$\$
-# 	# 	BEGIN
-# 	# 		IF NOT EXISTS (
-# 	# 			SELECT FROM pg_catalog.pg_roles WHERE rolname = '${POSTGRES_USER}') THEN
-# 	# 			CREATE ROLE "${POSTGRES_USER}" LOGIN PASSWORD '${POSTGRES_PASSWORD}';
-# 	# 			RAISE NOTICE 'Role ${POSTGRES_USER} created';
-# 	# 		END IF;
-
-# 	# 		IF NOT EXISTS (
-# 	# 			SELECT FROM pg_catalog.pg_database WHERE datname = 'snaily-cad-v4') THEN
-# 	# 			CREATE DATABASE "snaily-cad-v4" WITH OWNER = "${POSTGRES_USER}";
-# 	# 			RAISE NOTICE 'Database snaily-cad-v4 created';
-# 	# 		END IF;
-# 	# 	END
-# 	# 	\$\$;
-# 	# EOSQL
-# 	# echo "Role creation attempted"
-# 	# echo "$@"
-# 	# Check if the 'snailycad' role exists
-# 	ROLE_EXISTS=$(psql -tAc -h /home/container/postgresql/service "SELECT 1 FROM pg_roles WHERE rolname='"${POSTGRES_USER}"'")
-# 	if [ "$ROLE_EXISTS" != "1" ]; then
-# 		# Create the 'snailycad' role if it doesn't exist
-# 		psql -c "CREATE ROLE "${POSTGRES_USER}" LOGIN PASSWORD 'your_password_here';"
-		
-# 		# Optionally, grant permissions to the 'snailycad' role
-# 		psql -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "${POSTGRES_USER}";"
-# 		psql -c "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO "${POSTGRES_USER}";"
-# 		psql -c "GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO "${POSTGRES_USER}";"
-# 	fi
-
-# }
-
 # create initial database
 # uses environment variables for input: POSTGRES_DB
 docker_setup_db() {
@@ -406,8 +371,6 @@ _main() {
 		fi
 	fi
 
-	
-	# Run the command in "$@" in the background
 	exec "$@" &
 
 	cd /home/container
@@ -430,8 +393,6 @@ if ! _is_sourced; then
 		mkdir -p /home/container/postgresql
         curl -o "${PGFOLDER}/postgresql.conf" https://raw.githubusercontent.com/postgres/postgres/master/src/backend/utils/misc/postgresql.conf.sample
 		echo "unix_socket_directories = '${PGFOLDER}/service'" >> "${PGFOLDER}/postgresql.conf"
-		# echo "unix_socket_group = 'root'" >> "${PGFOLDER}/postgresql.conf"
-		# echo "unix_socket_permissions = 0777" >> "${PGFOLDER}/postgresql.conf"
 		echo "listen_addresses = '*'" >> "${PGFOLDER}/postgresql.conf"
 		echo "port = 5432" >> "${PGFOLDER}/postgresql.conf"
 		echo "max_connections = 100" >> "${PGFOLDER}/postgresql.conf"

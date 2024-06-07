@@ -24,6 +24,10 @@ RUN set -ex; \
     ca-certificates \
     iproute2 \
     git \
+    make \
+    tar \
+    xz-utils \
+    build-essential \
   ; \
   rm -rf /var/lib/apt/lists/*
 
@@ -247,13 +251,13 @@ RUN mkdir -p /home/container/postgresql/service && chown -R container:root /home
 COPY docker-entrypoint.sh docker-ensure-initdb.sh /usr/local/bin/
 RUN ln -sT docker-ensure-initdb.sh /usr/local/bin/docker-enforce-initdb.sh
 STOPSIGNAL SIGINT
-RUN chown -R container:root /usr/local/bin/docker-entrypoint.sh /usr/local/bin/docker-ensure-initdb.sh /usr/local/bin/docker-enforce-initdb.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh /usr/local/bin/docker-ensure-initdb.sh /usr/local/bin/docker-enforce-initdb.sh
+RUN chown -R container:root /usr/local/bin/docker-entrypoint.sh /usr/local/bin/docker-ensure-initdb.sh /usr/local/bin/docker-enforce-initdb.sh && \
+    chmod +x /usr/local/bin/docker-entrypoint.sh /usr/local/bin/docker-ensure-initdb.sh /usr/local/bin/docker-enforce-initdb.sh && \
+    chmod 777 /usr/local/bin/docker-entrypoint.sh /usr/local/bin/docker-ensure-initdb.sh /usr/local/bin/docker-enforce-initdb.sh
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["postgres", "-D", "/home/container/postgresql/data", "-c", "config_file=/home/container/postgresql/postgresql.conf"]
 RUN chmod 00700 "$PGDATA" && \
     chmod 700 "/home/container/postgresql/service"
-
 
 USER container
