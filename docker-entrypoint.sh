@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -Eeo pipefail
-export PGDATA='/home/container/postgresql/data'
+export PGHOST="/home/container/postgresql/service"
 # TODO swap to -Eeuo pipefail above (after handling all potentially-unset variables)
 
 # usage: file_env VAR [DEFAULT]
@@ -42,22 +42,22 @@ docker_create_db_directories() {
 	chmod 00700 "$PGDATA" || :
 
 	# ignore failure since it will be fine when using the image provided directory; see also https://github.com/docker-library/postgres/pull/289
-	mkdir -p /var/run/postgresql || :
-	chmod 03775 /var/run/postgresql || :
+	mkdir -p "$PGHOST" || :
+	chmod 03775 "$PGHOST" || :
 
 	# Create the transaction log directory before initdb is run so the directory is owned by the correct user
 	if [ -n "${POSTGRES_INITDB_WALDIR:-}" ]; then
 		mkdir -p "$POSTGRES_INITDB_WALDIR"
 		if [ "$user" = '0' ]; then
-			find "$POSTGRES_INITDB_WALDIR" \! -user postgres -exec chown postgres '{}' +
+			find "$POSTGRES_INITDB_WALDIR" \! -user container -exec chown container '{}' +
 		fi
 		chmod 700 "$POSTGRES_INITDB_WALDIR"
 	fi
 
 	# allow the container to be started with `--user`
 	if [ "$user" = '0' ]; then
-		find "$PGDATA" \! -user postgres -exec chown postgres '{}' +
-		find /var/run/postgresql \! -user postgres -exec chown postgres '{}' +
+		find "$PGDATA" \! -user container -exec chown container '{}' +
+		find "$PGHOST" \! -user container -exec chown container '{}' +
 	fi
 }
 
@@ -78,8 +78,8 @@ docker_init_database_dir() {
 				NSS_WRAPPER_GROUP="$(mktemp)"
 				export LD_PRELOAD="$wrapper" NSS_WRAPPER_PASSWD NSS_WRAPPER_GROUP
 				local gid; gid="$(id -g)"
-				printf 'postgres:x:%s:%s:PostgreSQL:%s:/bin/false\n' "$uid" "$gid" "$PGDATA" > "$NSS_WRAPPER_PASSWD"
-				printf 'postgres:x:%s:\n' "$gid" > "$NSS_WRAPPER_GROUP"
+				printf 'container:x:%s:%s:PostgreSQL:%s:/bin/false\n' "$uid" "$gid" "$PGDATA" > "$NSS_WRAPPER_PASSWD"
+				printf 'container:x:%s:\n' "$gid" > "$NSS_WRAPPER_GROUP"
 				break
 			fi
 		done
@@ -90,8 +90,14 @@ docker_init_database_dir() {
 	fi
 
 	# --pwfile refuses to handle a properly-empty file (hence the "\n"): https://github.com/docker-library/postgres/issues/1025
-	eval 'initdb --username="$POSTGRES_USER" --pwfile=<(printf "%s\n" "$POSTGRES_PASSWORD") '"$POSTGRES_INITDB_ARGS"' "$@"'
+	# Define the PostgreSQL data directory
+	DATA_DIR="/home/container/postgresql/data"
 
+	# Check if the directory exists and is not empty
+	if [ ! -d "$DATA_DIR" ] && [ ! "$(ls -A $DATA_DIR)" ]; then
+		echo "Initializing PostgreSQL database..."
+		eval 'initdb --username="$POSTGRES_USER" --pwfile=<(printf "%s\n" "$POSTGRES_PASSWORD") '"$POSTGRES_INITDB_ARGS"' "$@"'
+	fi
 	# unset/cleanup "nss_wrapper" bits
 	if [[ "${LD_PRELOAD:-}" == */libnss_wrapper.so ]]; then
 		rm -f "$NSS_WRAPPER_PASSWD" "$NSS_WRAPPER_GROUP"
@@ -194,13 +200,48 @@ docker_process_init_files() {
 #    ie: docker_process_sql -f my-file.sql
 #    ie: docker_process_sql <my-file.sql
 docker_process_sql() {
-	local query_runner=( psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --no-password --no-psqlrc )
+	local query_runner=( psql -v ON_ERROR_STOP=1 --no-password --no-psqlrc -h /home/container/postgresql/service)
 	if [ -n "$POSTGRES_DB" ]; then
 		query_runner+=( --dbname "$POSTGRES_DB" )
 	fi
 
 	PGHOST= PGHOSTADDR= "${query_runner[@]}" "$@"
 }
+
+# createsnaily() {
+# 	echo "Attempting to create role ${POSTGRES_USER} WITH PASSWORD '${POSTGRES_PASSWORD}'..."
+# 	# psql -h /home/container/postgresql/service -u "container" <<-EOSQL
+# 	# 	DO \$\$
+# 	# 	BEGIN
+# 	# 		IF NOT EXISTS (
+# 	# 			SELECT FROM pg_catalog.pg_roles WHERE rolname = '${POSTGRES_USER}') THEN
+# 	# 			CREATE ROLE "${POSTGRES_USER}" LOGIN PASSWORD '${POSTGRES_PASSWORD}';
+# 	# 			RAISE NOTICE 'Role ${POSTGRES_USER} created';
+# 	# 		END IF;
+
+# 	# 		IF NOT EXISTS (
+# 	# 			SELECT FROM pg_catalog.pg_database WHERE datname = 'snaily-cad-v4') THEN
+# 	# 			CREATE DATABASE "snaily-cad-v4" WITH OWNER = "${POSTGRES_USER}";
+# 	# 			RAISE NOTICE 'Database snaily-cad-v4 created';
+# 	# 		END IF;
+# 	# 	END
+# 	# 	\$\$;
+# 	# EOSQL
+# 	# echo "Role creation attempted"
+# 	# echo "$@"
+# 	# Check if the 'snailycad' role exists
+# 	ROLE_EXISTS=$(psql -tAc -h /home/container/postgresql/service "SELECT 1 FROM pg_roles WHERE rolname='"${POSTGRES_USER}"'")
+# 	if [ "$ROLE_EXISTS" != "1" ]; then
+# 		# Create the 'snailycad' role if it doesn't exist
+# 		psql -c "CREATE ROLE "${POSTGRES_USER}" LOGIN PASSWORD 'your_password_here';"
+		
+# 		# Optionally, grant permissions to the 'snailycad' role
+# 		psql -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "${POSTGRES_USER}";"
+# 		psql -c "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO "${POSTGRES_USER}";"
+# 		psql -c "GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO "${POSTGRES_USER}";"
+# 	fi
+
+# }
 
 # create initial database
 # uses environment variables for input: POSTGRES_DB
@@ -212,9 +253,24 @@ docker_setup_db() {
 		EOSQL
 	)"
 	if [ -z "$dbAlreadyExists" ]; then
-		POSTGRES_DB= docker_process_sql --dbname postgres --set db="$POSTGRES_DB" <<-'EOSQL'
-			CREATE DATABASE :"db" ;
-		EOSQL
+		roleExists=$(docker_process_sql --dbname postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='${POSTGRES_USER}'")
+		if [ "$roleExists" != "1" ]; then
+			docker_process_sql --dbname postgres -c "CREATE ROLE \"${POSTGRES_USER}\" WITH LOGIN PASSWORD '${POSTGRES_PASSWORD}';"
+		fi
+
+		# Check if the primary database exists and create it if it does not
+		dbExists=$(docker_process_sql --dbname postgres -tAc "SELECT 1 FROM pg_database WHERE datname='${POSTGRES_DB}'")
+		if [ "$dbExists" != "1" ]; then
+			docker_process_sql --dbname postgres -c "CREATE DATABASE \"${POSTGRES_DB}\" WITH OWNER = \"${POSTGRES_USER}\";"
+		fi
+
+		# Check if the 'snaily-cad-v4' database exists and create it if it does not, and it is not the primary db
+		if [ "${POSTGRES_DB}" != "snaily-cad-v4" ]; then
+			dbExists=$(docker_process_sql --dbname postgres -tAc "SELECT 1 FROM pg_database WHERE datname='snaily-cad-v4'")
+			if [ "$dbExists" != "1" ]; then
+				docker_process_sql --dbname postgres -c "CREATE DATABASE \"snaily-cad-v4\" WITH OWNER = \"${POSTGRES_USER}\";"
+			fi
+		fi
 		printf '\n'
 	fi
 }
@@ -232,7 +288,7 @@ docker_setup_env() {
 	declare -g DATABASE_ALREADY_EXISTS
 	: "${DATABASE_ALREADY_EXISTS:=}"
 	# look specifically for PG_VERSION, as it is expected in the DB dir
-	if [ -s "$PGDATA/PG_VERSION" ]; then
+	if [ -s "$*/PG_VERSION" ]; then
 		DATABASE_ALREADY_EXISTS='true'
 	fi
 }
@@ -268,17 +324,15 @@ docker_temp_server_start() {
 
 	# internal start of server in order to allow setup using psql client
 	# does not listen on external TCP/IP and waits until start finishes
-	set -- "$@" -c listen_addresses='' -p "${PGPORT:-5432}"
-
+	set -- "$@" -c listen_addresses='' -p "${PGPORT:-5432}" -k /home/container/postgresql/service
 	PGUSER="${PGUSER:-$POSTGRES_USER}" \
-	pg_ctl -D "$PGDATA" \
-		-o "$(printf '%q ' "$@")" \
-		-w start
+	pg_ctl -D "$PGDATA" -o "$(printf '%q ' "$@")" -w start
+
 }
 
 # stop postgresql server after done setting up user and running scripts
 docker_temp_server_stop() {
-	PGUSER="${PGUSER:-postgres}" \
+	PGUSER="${PGUSER:-container}" \
 	pg_ctl -D "$PGDATA" -m fast -w stop
 }
 
@@ -311,7 +365,7 @@ _main() {
 		docker_create_db_directories
 		if [ "$(id -u)" = '0' ]; then
 			# then restart script as postgres user
-			exec gosu postgres "$BASH_SOURCE" "$@"
+			exec gosu container "$BASH_SOURCE" "$@"
 		fi
 
 		# only run initialization on an empty data directory
@@ -328,8 +382,11 @@ _main() {
 			# e.g. when '--auth=md5' or '--auth-local=md5' is used in POSTGRES_INITDB_ARGS
 			export PGPASSWORD="${PGPASSWORD:-$POSTGRES_PASSWORD}"
 			docker_temp_server_start "$@"
+	
 
+			echo "Creating initial database..."
 			docker_setup_db
+			echo "Creating initial database... done"
 			docker_process_init_files /docker-entrypoint-initdb.d/*
 
 			docker_temp_server_stop
@@ -349,9 +406,53 @@ _main() {
 		fi
 	fi
 
-	exec "$@"
+	
+	# Run the command in "$@" in the background
+	exec "$@" &
+
+	cd /home/container
+
+	# Make internal Docker IP address available to processes.
+	INTERNAL_IP=$(ip route get 1 | awk '{print $(NF-2);exit}')
+	export INTERNAL_IP
+
+	# Replace Startup Variables
+	MODIFIED_STARTUP=$(echo -e ${STARTUP} | sed -e 's/{{/${/g' -e 's/}}/}/g')
+	echo ":/home/container$ ${MODIFIED_STARTUP}"
+
+	# Run the Server
+	eval ${MODIFIED_STARTUP}
 }
 
 if ! _is_sourced; then
+    if [ ! -f /home/container/postgresql/postgres.conf ]; then
+        # if the file does not exist, create it
+		mkdir -p /home/container/postgresql
+        curl -o "${PGFOLDER}/postgresql.conf" https://raw.githubusercontent.com/postgres/postgres/master/src/backend/utils/misc/postgresql.conf.sample
+		echo "unix_socket_directories = '${PGFOLDER}/service'" >> "${PGFOLDER}/postgresql.conf"
+		# echo "unix_socket_group = 'root'" >> "${PGFOLDER}/postgresql.conf"
+		# echo "unix_socket_permissions = 0777" >> "${PGFOLDER}/postgresql.conf"
+		echo "listen_addresses = '*'" >> "${PGFOLDER}/postgresql.conf"
+		echo "port = 5432" >> "${PGFOLDER}/postgresql.conf"
+		echo "max_connections = 100" >> "${PGFOLDER}/postgresql.conf"
+		echo "shared_buffers = 128MB" >> "${PGFOLDER}/postgresql.conf"
+    fi
+
+	if [ -f /home/container/postgresql/service/.s.PGSQL.5432 ]; then
+		echo "Removing stale PostgreSQL socket..."
+		rm -f /home/container/postgresql/service/.s.PGSQL.5432
+		rm -f /home/container/postgresql/service/.s.PGSQL.5432.lock
+	fi
+
+	# Initialize the data directory if needed
+	if [ ! -f /home/container/postgresql/data/PG_VERSION ]; then
+		echo "Initializing PostgreSQL data directory..."
+		rm -rf /home/container/postgresql/data
+		initdb -D /home/container/postgresql/data
+	else
+		echo "PostgreSQL data directory already initialized; Skipping."
+	fi
+
+
 	_main "$@"
 fi
