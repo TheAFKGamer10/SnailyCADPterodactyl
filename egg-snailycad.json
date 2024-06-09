@@ -29,7 +29,7 @@
     },
     "variables": [
         {
-            "name": "POSTGRES USER",
+            "name": "Postgres User",
             "description": "The username to the PostgreSQL database.\r\nThe database will be created upon server start.",
             "env_variable": "POSTGRES_USER",
             "default_value": "snailycad",
@@ -39,7 +39,7 @@
             "field_type": "text"
         },
         {
-            "name": "POSTGRES PASSWORD",
+            "name": "Postgres Password",
             "description": "The password to the PostgreSQL database.\r\nThe database will be created upon server start.",
             "env_variable": "POSTGRES_PASSWORD",
             "default_value": "CHANGEME",
@@ -49,7 +49,7 @@
             "field_type": "text"
         },
         {
-            "name": "DOMAIN",
+            "name": "Domain",
             "description": "The domain you might be using. (Optional, however, recommended)\r\n\r\nYou may only set this when using a domain name.\r\nThis must be the TLD of the domain. (e.g.: example.com or mycommunity.com)\r\n\r\nValid Examples:\r\nexample.com\r\nexample.com:3000 - a port can only be used when using a domain without SSL (https).\r\n\r\nInvalid Examples:\r\ncad.example.com - subdomain cannot be used. must be top level domain\r\n192.38.33.29 - an IP is not a domain",
             "env_variable": "DOMAIN",
             "default_value": "localhost",
@@ -59,7 +59,7 @@
             "field_type": "text"
         },
         {
-            "name": "CLIENT URL",
+            "name": "Client URL",
             "description": "The URL\/IP to where the CAD is hosted at, see examples below.\r\n\r\nIn support, this will be called the client.\r\nValid Examples:\r\nhttps:\/\/cad.example.com - subdomain\r\nhttps:\/\/mycad.com - Top level domain\r\nhttp:\/\/192.168.0.190:3000 - LAN IP-address\r\nhttp:\/\/83.39.20.30:3000 - WAN IP-address\r\n\r\nInvalid Examples:\r\nlocalhost - will simply not work.\r\ncad.example.com - missing https:\/\/ or http:\/\/.\r\nhttp:\/\/192.168.x.x:3000 - default URL, will not work.",
             "env_variable": "CLIENT_URL",
             "default_value": "http:\/\/localhost\/",
@@ -79,7 +79,7 @@
             "field_type": "text"
         },
         {
-            "name": "CLIENT PORT",
+            "name": "Client Port",
             "description": "The port where the client should run on.",
             "env_variable": "CLIENT_PORT",
             "default_value": "39600",
@@ -89,7 +89,7 @@
             "field_type": "text"
         },
         {
-            "name": "API PORT",
+            "name": "API Port",
             "description": "The port where the API should run on.",
             "env_variable": "API_PORT",
             "default_value": "39600",
@@ -99,7 +99,7 @@
             "field_type": "text"
         },
         {
-            "name": "SECURE COOKIES",
+            "name": "Secure Cookies",
             "description": "Only enable when uterly required. (This may not work all the time; work-in-progress.)",
             "env_variable": "SECURE_COOKIES_FOR_IFRAME",
             "default_value": "false",

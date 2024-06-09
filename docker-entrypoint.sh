@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -Eeo pipefail
 export PGHOST="/home/container/postgresql/service"
+
+# Read the value of POSTGRES_PASSWORD from the .env file and remove quotes
+POSTGRES_PASSWORD=$(grep 'POSTGRES_PASSWORD=' .env | cut -d '=' -f2 | tr -d '"')
+export POSTGRES_PASSWORD
+
+export POSTGRES_USER="postgres"
+
 # TODO swap to -Eeuo pipefail above (after handling all potentially-unset variables)
 
 # usage: file_env VAR [DEFAULT]
