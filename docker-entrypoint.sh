@@ -6,7 +6,8 @@ export PGHOST="/home/container/postgresql/service"
 POSTGRES_PASSWORD=$(grep 'POSTGRES_PASSWORD=' .env | cut -d '=' -f2 | tr -d '"')
 export POSTGRES_PASSWORD
 
-export POSTGRES_USER="postgres"
+POSTGRES_USER="snailycad"
+export POSTGRES_USER
 
 # TODO swap to -Eeuo pipefail above (after handling all potentially-unset variables)
 

@@ -10,7 +10,7 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
                 const args = process.argv.slice(2);
                 const data = {
                     "POSTGRES_PASSWORD": PASS.trim().replace(/\n/g, '').replace(/\r/g, ''),
-                    "POSTGRES_USER": "postgres",
+                    "POSTGRES_USER": "snailycad",
                     "JWT_SECRET": SECRET.trim().replace(/\n/g, '').replace(/\r/g, ''),
                     "ENCRYPTION_TOKEN": SECRET.trim().replace(/\n/g, '').replace(/\r/g, ''),
                     "CORS_ORIGIN_URL": args[0],
