@@ -10,16 +10,16 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
                 const args = process.argv.slice(2);
                 const data = {
                     "POSTGRES_PASSWORD": PASS.trim().replace(/\n/g, '').replace(/\r/g, ''),
-                    "POSTGRES_USER": args[1],
+                    "POSTGRES_USER": "postgres",
                     "JWT_SECRET": SECRET.trim().replace(/\n/g, '').replace(/\r/g, ''),
                     "ENCRYPTION_TOKEN": SECRET.trim().replace(/\n/g, '').replace(/\r/g, ''),
-                    "CORS_ORIGIN_URL": args[2],
-                    "NEXT_PUBLIC_CLIENT_URL": args[2],
-                    "NEXT_PUBLIC_PROD_ORIGIN": args[3],
-                    "PORT_CLIENT": args[4],
-                    "PORT_API": args[5],
-                    "DOMAIN": args[6],
-                    "SECURE_COOKIES_FOR_IFRAME": args[7]
+                    "CORS_ORIGIN_URL": args[0],
+                    "NEXT_PUBLIC_CLIENT_URL": args[0],
+                    "NEXT_PUBLIC_PROD_ORIGIN": args[1],
+                    "PORT_CLIENT": args[2],
+                    "PORT_API": args[3],
+                    "DOMAIN": args[4],
+                    "SECURE_COOKIES_FOR_IFRAME": args[5]
                 };
 
                 execSync(`cd /mnt/server`, { stdio: 'inherit' });
