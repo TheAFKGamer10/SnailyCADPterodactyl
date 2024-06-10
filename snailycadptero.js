@@ -15,7 +15,7 @@ fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&lowe
                     "ENCRYPTION_TOKEN": SECRET.trim().replace(/\n/g, '').replace(/\r/g, ''),
                     "CORS_ORIGIN_URL": args[0],
                     "NEXT_PUBLIC_CLIENT_URL": args[0],
-                    "NEXT_PUBLIC_PROD_ORIGIN": args[1],
+                    "NEXT_PUBLIC_PROD_ORIGIN": `${args[1]}/v1`,
                     "PORT_CLIENT": args[2],
                     "PORT_API": args[3],
                     "DOMAIN": args[4],
