@@ -399,7 +399,7 @@ if ! _is_sourced; then
     if [ ! -f /home/container/postgresql/postgres.conf ]; then
         # if the file does not exist, create it
 		mkdir -p /home/container/postgresql
-        curl -o "${PGFOLDER}/postgresql.conf" https://raw.githubusercontent.com/postgres/postgres/master/src/backend/utils/misc/postgresql.conf.sample
+		wget -O "${PGFOLDER}/postgresql.conf" https://raw.githubusercontent.com/postgres/postgres/master/src/backend/utils/misc/postgresql.conf.sample
 		echo "unix_socket_directories = '${PGFOLDER}/service'" >> "${PGFOLDER}/postgresql.conf"
 		echo "listen_addresses = '*'" >> "${PGFOLDER}/postgresql.conf"
 		echo "port = 5432" >> "${PGFOLDER}/postgresql.conf"
