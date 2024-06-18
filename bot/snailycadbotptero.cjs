@@ -39,6 +39,7 @@ fetch('https://www.random.org/strings/?num=1&len=20&digits=on&upperalpha=on&lowe
             console.error('Error:', error);
         }
 
+        execSync(`echo "Setting Activity"`, { stdio: 'inherit' });
         try { 
             let coustomrp = './src/events/client/ready.ts'
             let fileContent = fs.readFileSync(coustomrp, 'utf-8');
