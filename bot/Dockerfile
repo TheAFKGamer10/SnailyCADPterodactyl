@@ -26,6 +26,7 @@ RUN set -ex; \
     git \
     make \
     tar \
+    wget \
     xz-utils \
     build-essential \
   ; \
@@ -269,7 +270,7 @@ RUN set -ex \
     | cut -d: -f1 \
     | sort -u \
     | xargs -r apt-mark manual \
-  && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+#   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   # smoke test
   && yarn --version \
   && rm -rf /tmp/*

@@ -9,6 +9,7 @@ fetch('https://www.random.org/strings/?num=1&len=20&digits=on&upperalpha=on&lowe
         const data = {
             "POSTGRES_PASSWORD": PASS.trim().replace(/\n/g, '').replace(/\r/g, ''),
             "POSTGRES_USER": "snailycadbot",
+            "DB_PORT": "5432",
             "BOT_TOKEN": args[0],
         };
 
@@ -34,6 +35,15 @@ fetch('https://www.random.org/strings/?num=1&len=20&digits=on&upperalpha=on&lowe
                 }
                 fs.writeFileSync(envdir, fileLines.join('\n'));
             });
+        } catch (error) {
+            console.error('Error:', error);
+        }
+
+        try { 
+            let coustomrp = './src/events/client/ready.ts'
+            let fileContent = fs.readFileSync(coustomrp, 'utf-8');
+            updatedContent = fileContent.replace('bot.user?.setActivity("snailycad.org", { type: DJS.ActivityType.Watching });', `bot.user?.setActivity("${args[1]}", { type: DJS.ActivityType.${args[2]} });`);
+            fs.writeFileSync(coustomrp, updatedContent);
         } catch (error) {
             console.error('Error:', error);
         }
