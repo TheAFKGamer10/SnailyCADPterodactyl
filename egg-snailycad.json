@@ -4,62 +4,32 @@
         "version": "PTDL_v2",
         "update_url": null
     },
-    "exported_at": "2024-06-07T16:37:35-05:00",
+    "exported_at": "2024-07-08T09:08:27-05:00",
     "name": "SnailyCAD",
     "author": "gumballguy12@gmail.com",
-    "description": "A Pterodactyl version of Snaily Cadv4.\r\nSnailyCAD is an open source Computer Aided Dispatch (CAD) for FiveM, this is a web based integration for communities who love police roleplaying and dispatching.\r\nMore info at https:\/\/snailycad.org\/",
+    "description": "A Pterodactyl version of SnailyCad v4.\r\nSnailyCAD is an open source Computer Aided Dispatch (CAD) for FiveM, this is a web based integration for communities who love police roleplaying and dispatching.\r\nMore info at https:\/\/snailycad.org\/",
     "features": null,
     "docker_images": {
-        "Nodejs 18": "ghcr.io\/theafkgamer10\/snailycadpterodactyl:latest"
+        "Nodejs 20": "ghcr.io\/theafkgamer10\/snailycadpterodactyl:latest"
     },
     "file_denylist": [],
-    "startup": "pnpm install && node scripts\/copy-env.mjs --client --api && pnpm run build && pnpm run start",
+    "startup": "pnpm update && \\\r\npnpm install && \\\r\nnode scripts\/copy-env.mjs --client --api && \\\r\nehco \"Now Building the CAD Application. This may take a few minutes.\" && \\\r\npnpm run build > buildout.txt && \\\r\npnpm run start",
     "config": {
-        "files": "{}",
+        "files": "{\r\n    \".env\": {\r\n        \"parser\": \"file\",\r\n        \"find\": {\r\n            \"CORS_ORIGIN_URL\": \"CORS_ORIGIN_URL=\\\"{{server.build.env.CLIENT_URL}}\\\"\",\r\n            \"NEXT_PUBLIC_CLIENT_URL\": \"NEXT_PUBLIC_CLIENT_URL=\\\"{{server.build.env.CLIENT_URL}}\\\"\",\r\n            \"NEXT_PUBLIC_PROD_ORIGIN\": \"NEXT_PUBLIC_PROD_ORIGIN=\\\"{{server.build.env.API_URL}}\/v1\\\"\",\r\n            \"DOMAIN\": \"DOMAIN=\\\"{{server.build.env.DOMAIN}}\\\"\",\r\n            \"SECURE_COOKIES_FOR_IFRAME\": \"SECURE_COOKIES_FOR_IFRAME=\\\"{{server.build.env.SECURE_COOKIES_FOR_IFRAME}}\\\"\",\r\n            \"PORT_API\": \"PORT_API={{server.build.env.API_PORT}}\",\r\n            \"PORT_CLIENT\": \"PORT_CLIENT={{server.build.env.CLIENT_PORT}}\"\r\n        }\r\n    }\r\n}",
         "startup": "{\r\n    \"done\": \"SnailyCADv4 is running with version\"\r\n}",
         "logs": "{}",
         "stop": "^C^C"
     },
     "scripts": {
         "installation": {
-            "script": "apt update\r\napt install -y git curl wget\r\n\r\nmkdir -p \/mnt\/server\r\ncd \/mnt\/server\r\n\r\nrm -f snailycadptero.js\r\nrm -rf snaily-cadv4\r\nwget https:\/\/raw.githubusercontent.com\/TheAFKGamer10\/SnailyCADPterodactyl\/main\/snailycadptero.js\r\nnode snailycadptero.js $POSTGRES_PASSWORD $POSTGRES_USER $CLIENT_URL $API_URL $CLIENT_PORT $API_PORT $DOMAIN $SECURE_COOKIES_FOR_IFRAME\r\n\r\necho -e \"Install Complete\"\r\nexit 0",
+            "script": "apt update\r\napt install -y git curl wget\r\n\r\nmkdir -p \/mnt\/server\r\ncd \/mnt\/server\r\n\r\nrm -f snailycadptero.cjs\r\nrm -rf snaily-cadv4\r\nwget https:\/\/raw.githubusercontent.com\/TheAFKGamer10\/SnailyCADPterodactyl\/main\/snailycadptero.cjs\r\nnode snailycadptero.cjs $CLIENT_URL $API_URL $CLIENT_PORT $API_PORT $DOMAIN $SECURE_COOKIES_FOR_IFRAME\r\n\r\necho -e \"Install Complete\"\r\nexit 0",
             "container": "node:18",
             "entrypoint": "bash"
         }
     },
     "variables": [
         {
-            "name": "Postgres User",
-            "description": "The username to the PostgreSQL database.\r\nThe database will be created upon server start.",
-            "env_variable": "POSTGRES_USER",
-            "default_value": "snailycad",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "required|string|max:36",
-            "field_type": "text"
-        },
-        {
-            "name": "Postgres Password",
-            "description": "The password to the PostgreSQL database.\r\nThe database will be created upon server start.",
-            "env_variable": "POSTGRES_PASSWORD",
-            "default_value": "CHANGEME",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "required|string|max:128",
-            "field_type": "text"
-        },
-        {
-            "name": "Domain",
-            "description": "The domain you might be using. (Optional, however, recommended)\r\n\r\nYou may only set this when using a domain name.\r\nThis must be the TLD of the domain. (e.g.: example.com or mycommunity.com)\r\n\r\nValid Examples:\r\nexample.com\r\nexample.com:3000 - a port can only be used when using a domain without SSL (https).\r\n\r\nInvalid Examples:\r\ncad.example.com - subdomain cannot be used. must be top level domain\r\n192.38.33.29 - an IP is not a domain",
-            "env_variable": "DOMAIN",
-            "default_value": "localhost",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "required|string|max:36",
-            "field_type": "text"
-        },
-        {
-            "name": "Client URL",
+            "name": "CLIENT URL",
             "description": "The URL\/IP to where the CAD is hosted at, see examples below.\r\n\r\nIn support, this will be called the client.\r\nValid Examples:\r\nhttps:\/\/cad.example.com - subdomain\r\nhttps:\/\/mycad.com - Top level domain\r\nhttp:\/\/192.168.0.190:3000 - LAN IP-address\r\nhttp:\/\/83.39.20.30:3000 - WAN IP-address\r\n\r\nInvalid Examples:\r\nlocalhost - will simply not work.\r\ncad.example.com - missing https:\/\/ or http:\/\/.\r\nhttp:\/\/192.168.x.x:3000 - default URL, will not work.",
             "env_variable": "CLIENT_URL",
             "default_value": "http:\/\/localhost\/",
@@ -70,7 +40,7 @@
         },
         {
             "name": "API URL",
-            "description": "The URL\/IP to where the API is hosted at (\/v1 is required.), see examples below.\r\n\r\nIn support, this will be called the API.\r\nValid Examples:\r\nhttps:\/\/cad-api.example.com\/v1 - subdomain\r\nhttp:\/\/192.168.0.190:8080\/v1 - LAN IP-address\r\nhttp:\/\/83.39.20.30:8080\/v1 - WAN IP-address\r\n\r\nInvalid Examples:\r\nlocalhost - will simply not work.\r\nhttps:\/\/cad-api.example.com - missing \/v1\r\ncad-api.example.com - missing https:\/\/ or http:\/\/.\r\nhttp:\/\/192.168.x.x:8080\/v1 - default URL, will not work.",
+            "description": "The URL\/IP to where the API is hosted at, see examples below.\r\n\r\nIn support, this will be called the API.\r\nValid Examples:\r\nhttps:\/\/cad-api.example.com\/v1 - subdomain\r\nhttp:\/\/192.168.0.190:8080\/v1 - LAN IP-address\r\nhttp:\/\/83.39.20.30:8080\/v1 - WAN IP-address\r\n\r\nInvalid Examples:\r\nlocalhost - will simply not work.\r\ncad-api.example.com - missing https:\/\/ or http:\/\/.\r\nhttp:\/\/192.168.x.x:8080\/v1 - default URL, will not work.",
             "env_variable": "API_URL",
             "default_value": "http:\/\/localhost\/",
             "user_viewable": true,
@@ -79,17 +49,27 @@
             "field_type": "text"
         },
         {
-            "name": "Client Port",
-            "description": "The port where the client should run on.",
-            "env_variable": "CLIENT_PORT",
-            "default_value": "39600",
+            "name": "DOMAIN",
+            "description": "The domain you might be using. (Optional, however, recommended)\r\n\r\nYou may only set this when using a domain name.\r\nThis must be the TLD of the domain. (e.g.: example.com or mycommunity.com)\r\n\r\nValid Examples:\r\nexample.com\r\nexample.com:3000 - a port can only be used when using a domain without SSL (https).\r\n\r\nInvalid Examples:\r\ncad.example.com - subdomain cannot be used. must be top level domain\r\n192.38.33.29 - an IP is not a domain",
+            "env_variable": "DOMAIN",
+            "default_value": "localhost",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "required|string|max:5",
+            "rules": "string|max:36",
             "field_type": "text"
         },
         {
-            "name": "API Port",
+            "name": "SECURE COOKIES",
+            "description": "Only enable when uterly required. (This may not work all the time; work-in-progress.)",
+            "env_variable": "SECURE_COOKIES_FOR_IFRAME",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "string|max:5|in:true,false",
+            "field_type": "text"
+        },
+        {
+            "name": "API PORT",
             "description": "The port where the API should run on.",
             "env_variable": "API_PORT",
             "default_value": "39600",
@@ -99,13 +79,13 @@
             "field_type": "text"
         },
         {
-            "name": "Secure Cookies",
-            "description": "Only enable when uterly required. (This may not work all the time; work-in-progress.)",
-            "env_variable": "SECURE_COOKIES_FOR_IFRAME",
-            "default_value": "false",
+            "name": "CLIENT PORT",
+            "description": "The port where the client should run on.",
+            "env_variable": "CLIENT_PORT",
+            "default_value": "39600",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "string|max:5|in:true,false",
+            "rules": "required|string|max:5",
             "field_type": "text"
         }
     ]
