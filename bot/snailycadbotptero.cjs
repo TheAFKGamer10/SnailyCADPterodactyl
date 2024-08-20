@@ -40,10 +40,10 @@ fetch('https://www.random.org/strings/?num=1&len=20&digits=on&upperalpha=on&lowe
         }
 
         execSync(`echo "Setting Activity"`, { stdio: 'inherit' });
-        try { 
+        try {
             let coustomrp = './src/events/client/ready.ts'
             let fileContent = fs.readFileSync(coustomrp, 'utf-8');
-            updatedContent = fileContent.replace('bot.user?.setActivity("snailycad.org", { type: DJS.ActivityType.Watching });', `bot.user?.setActivity("${args[1]}", { type: DJS.ActivityType.${args[2]} });`);
+            updatedContent = fileContent.replace('bot.user?.setActivity("snailycad.org", { type: DJS.ActivityType.Watching });', `bot.user?.setActivity("${args[1].replace(/_/g, ' ')}", { type: DJS.ActivityType.${args[2]} });`);
             fs.writeFileSync(coustomrp, updatedContent);
         } catch (error) {
             console.error('Error:', error);
