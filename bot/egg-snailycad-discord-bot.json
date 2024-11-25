@@ -6,7 +6,7 @@
     },
     "exported_at": "2024-11-25T11:55:24-06:00",
     "name": "SnailyCAD Discord Bot",
-    "author": "gumballguy12@gmail.com",
+    "author": "mail+dockerimage@afkhosting.win",
     "description": "A Pterodactyl version of SnailyCad v4's Disocrd bot.\r\nA self-hostable Discord bot that integrates with SnailyCADv4.",
     "features": null,
     "docker_images": {
