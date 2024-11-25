@@ -1,0 +1,62 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2024-11-25T11:55:24-06:00",
+    "name": "SnailyCAD Discord Bot",
+    "author": "gumballguy12@gmail.com",
+    "description": "A Pterodactyl version of SnailyCad v4's Disocrd bot.\r\nA self-hostable Discord bot that integrates with SnailyCADv4.",
+    "features": null,
+    "docker_images": {
+        "Yarn 1.22": "ghcr.io\/theafkgamer10\/snailycadbotpterodactyl:latest"
+    },
+    "file_denylist": [],
+    "startup": "yarn && yarn build && yarn start",
+    "config": {
+        "files": "{}",
+        "startup": "{\r\n    \"done\": \"Bot is running\"\r\n}",
+        "logs": "{}",
+        "stop": "^C^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "apt update\r\napt install -y git curl wget\r\n\r\nmkdir -p \/mnt\/server\r\ncd \/mnt\/server\r\n\r\nrm -f snailycadbotptero.cjs\r\nrm -rf snailycad-bot\r\nwget https:\/\/raw.githubusercontent.com\/TheAFKGamer10\/SnailyCADPterodactyl\/main\/bot\/snailycadbotptero.cjs\r\nnode snailycadbotptero.cjs $BOT_TOKEN $ACTIVITY $ACTIVITYTYPE\r\n\r\necho -e \"Install Complete\"\r\nexit 0",
+            "container": "node:18",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Bot Token",
+            "description": "You Bot Token you mode for the bot. \r\nThis bot should not be used by any other program(s) or servicses and should only be used for this application.\r\nYou can make\/find your token here: https:\/\/discord.com\/developers\/applications",
+            "env_variable": "BOT_TOKEN",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Activity Type",
+            "description": "What your bot should be \"doing\" when it starts. This is shown as an activity and this is the action it is doing.",
+            "env_variable": "ACTIVITYTYPE",
+            "default_value": "Watching",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|in:Playing,Streaming,Listening,Watching,Competing",
+            "field_type": "text"
+        },
+        {
+            "name": "Activity",
+            "description": "This is the description to what the bot is doing.",
+            "env_variable": "ACTIVITY",
+            "default_value": "afkhosting.win",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:64",
+            "field_type": "text"
+        }
+    ]
+}

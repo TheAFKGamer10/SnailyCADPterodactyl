@@ -4,21 +4,21 @@
         "version": "PTDL_v2",
         "update_url": null
     },
-    "exported_at": "2024-07-08T09:08:27-05:00",
+    "exported_at": "2024-11-25T11:53:38-06:00",
     "name": "SnailyCAD",
-    "author": "gumballguy12@gmail.com",
+    "author": "mail+petroegg@afkhosting.win",
     "description": "A Pterodactyl version of SnailyCad v4.\r\nSnailyCAD is an open source Computer Aided Dispatch (CAD) for FiveM, this is a web based integration for communities who love police roleplaying and dispatching.\r\nMore info at https:\/\/snailycad.org\/",
     "features": null,
     "docker_images": {
         "Nodejs 20": "ghcr.io\/theafkgamer10\/snailycadpterodactyl:latest"
     },
     "file_denylist": [],
-    "startup": "pnpm update && \\\r\npnpm install && \\\r\nnode scripts\/copy-env.mjs --client --api && \\\r\nehco \"Now Building the CAD Application. This may take a few minutes.\" && \\\r\npnpm run build > buildout.txt && \\\r\npnpm run start",
+    "startup": "pnpm update && pnpm install && node scripts\/copy-env.mjs --client --api && pnpm run build > buildout.txt && pnpm run start",
     "config": {
         "files": "{\r\n    \".env\": {\r\n        \"parser\": \"file\",\r\n        \"find\": {\r\n            \"CORS_ORIGIN_URL\": \"CORS_ORIGIN_URL=\\\"{{server.build.env.CLIENT_URL}}\\\"\",\r\n            \"NEXT_PUBLIC_CLIENT_URL\": \"NEXT_PUBLIC_CLIENT_URL=\\\"{{server.build.env.CLIENT_URL}}\\\"\",\r\n            \"NEXT_PUBLIC_PROD_ORIGIN\": \"NEXT_PUBLIC_PROD_ORIGIN=\\\"{{server.build.env.API_URL}}\/v1\\\"\",\r\n            \"DOMAIN\": \"DOMAIN=\\\"{{server.build.env.DOMAIN}}\\\"\",\r\n            \"SECURE_COOKIES_FOR_IFRAME\": \"SECURE_COOKIES_FOR_IFRAME=\\\"{{server.build.env.SECURE_COOKIES_FOR_IFRAME}}\\\"\",\r\n            \"PORT_API\": \"PORT_API={{server.build.env.API_PORT}}\",\r\n            \"PORT_CLIENT\": \"PORT_CLIENT={{server.build.env.CLIENT_PORT}}\"\r\n        }\r\n    }\r\n}",
         "startup": "{\r\n    \"done\": \"SnailyCADv4 is running with version\"\r\n}",
         "logs": "{}",
-        "stop": "^C^C"
+        "stop": "^C"
     },
     "scripts": {
         "installation": {
@@ -49,23 +49,13 @@
             "field_type": "text"
         },
         {
-            "name": "DOMAIN",
-            "description": "The domain you might be using. (Optional, however, recommended)\r\n\r\nYou may only set this when using a domain name.\r\nThis must be the TLD of the domain. (e.g.: example.com or mycommunity.com)\r\n\r\nValid Examples:\r\nexample.com\r\nexample.com:3000 - a port can only be used when using a domain without SSL (https).\r\n\r\nInvalid Examples:\r\ncad.example.com - subdomain cannot be used. must be top level domain\r\n192.38.33.29 - an IP is not a domain",
-            "env_variable": "DOMAIN",
-            "default_value": "localhost",
+            "name": "CLIENT PORT",
+            "description": "The port where the client should run on.",
+            "env_variable": "CLIENT_PORT",
+            "default_value": "39600",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "string|max:36",
-            "field_type": "text"
-        },
-        {
-            "name": "SECURE COOKIES",
-            "description": "Only enable when uterly required. (This may not work all the time; work-in-progress.)",
-            "env_variable": "SECURE_COOKIES_FOR_IFRAME",
-            "default_value": "false",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "string|max:5|in:true,false",
+            "rules": "required|string|max:5",
             "field_type": "text"
         },
         {
@@ -79,13 +69,23 @@
             "field_type": "text"
         },
         {
-            "name": "CLIENT PORT",
-            "description": "The port where the client should run on.",
-            "env_variable": "CLIENT_PORT",
-            "default_value": "39600",
+            "name": "DOMAIN",
+            "description": "The domain you might be using. (Optional, however, recommended)\r\n\r\nYou may only set this when using a domain name.\r\nThis must be the TLD of the domain. (e.g.: example.com or mycommunity.com)\r\n\r\nValid Examples:\r\nexample.com\r\nexample.com:3000 - a port can only be used when using a domain without SSL (https).\r\n\r\nInvalid Examples:\r\ncad.example.com - subdomain cannot be used. must be top level domain\r\n192.38.33.29 - an IP is not a domain",
+            "env_variable": "DOMAIN",
+            "default_value": "afkhosting.win",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "required|string|max:5",
+            "rules": "string|max:36",
+            "field_type": "text"
+        },
+        {
+            "name": "SECURE COOKIES",
+            "description": "Only enable when uterly required. (This may not work all the time; work-in-progress.)",
+            "env_variable": "SECURE_COOKIES_FOR_IFRAME",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "string|max:5|in:true,false",
             "field_type": "text"
         }
     ]
