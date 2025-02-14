@@ -407,6 +407,14 @@ if ! _is_sourced; then
 		echo "shared_buffers = 128MB" >> "${PGFOLDER}/postgresql.conf"
     fi
 
+	# Comment out the key autovacuum_worker_slots if it exists
+	if grep -q "^autovacuum_worker_slots" "${PGFOLDER}/postgresql.conf"; then
+		sed -i 's/^autovacuum_worker_slots/#autovacuum_worker_slots/' "${PGFOLDER}/postgresql.conf"
+		echo "Commented out autovacuum_worker_slots in postgresql.conf"
+	else
+		echo "autovacuum_worker_slots not found in postgresql.conf"
+	fi
+
 	if [ -f /home/container/postgresql/service/.s.PGSQL.5432 ]; then
 		echo "Removing stale PostgreSQL socket..."
 		rm -f /home/container/postgresql/service/.s.PGSQL.5432

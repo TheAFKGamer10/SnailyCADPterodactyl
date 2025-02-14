@@ -1,6 +1,10 @@
 const fs = require('fs');
 const execSync = require('child_process').execSync;
 
+// Legacy Allert
+execSync(`echo "This version of the egg is deprecated, please use the new version of the egg"`, { stdio: 'inherit' });
+execSync(`echo "You can find the new version of the egg at: "https://github.com/TheAFKGamer10/SnailyCADPterodactyl"`, { stdio: 'inherit' });
+
 fetch('https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&loweralpha=on&unique=on&format=plain')
     .then(response => response.text())
     .then(SECRET => {
