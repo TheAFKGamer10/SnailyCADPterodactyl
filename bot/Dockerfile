@@ -1,6 +1,6 @@
 #/bin/sh
-# postgresql 16
-FROM postgres:16.4
+# postgresql 17
+FROM postgres:17.5
 
 LABEL author="TheAFKGamer10" maintainer="mail+dockerimage@afkhosting.win"
 

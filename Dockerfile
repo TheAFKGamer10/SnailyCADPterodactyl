@@ -1,6 +1,6 @@
 #/bin/sh
-# postgresql 16
-FROM postgres:16.4
+# postgresql 17
+FROM postgres:17.5
 
 LABEL author="TheAFKGamer10" maintainer="mail+dockerimage@afkhosting.win"
 
@@ -10,7 +10,8 @@ RUN set -eux; \
 	groupmod -g 998 $(getent group 999 | cut -d: -f1); \
 	usermod -u 998 $(getent passwd 999 | cut -d: -f1); \
 	groupadd -r container --gid=999; \
-	useradd -r -g container --uid=999 --home-dir=/home/container/postgresql --shell=/bin/bash container; \
+	# useradd -r -g container --uid=999 --home-dir=/home/container/postgresql --shell=/bin/bash container; \
+	useradd -r -g container --uid=999 --home-dir=/home/container --shell=/bin/bash container; \
 	mkdir -p /home/container/postgresql; \
 	usermod -aG root container; \
 	chown -R container:root /home/container/postgresql; \
@@ -123,7 +124,7 @@ RUN ARCH= OPENSSL_ARCH= && dpkgArch="$(dpkg --print-architecture)" \
 
 # Install pnpm
 RUN         npm install npm typescript ts-node @types/node --location=global
-RUN         npm install pnpm --location=global
+RUN         npm install pnpm@9.0.4 --location=global
 ENV 	    SHELL=/bin/bash
 RUN 	    mkdir -p /home/container/.pnpm-global
 ENV         PNPM_HOME=/home/container/.pnpm-global
@@ -161,4 +162,6 @@ CMD ["postgres", "-D", "/home/container/postgresql/data", "-c", "config_file=/ho
 RUN chmod 00700 "$PGDATA" && \
 	chmod 700 "/home/container/postgresql/service"
 
+RUN echo 'export PATH="$HOME/.local/share/pnpm:$PATH"' >> /home/container/.bashrc
 USER container
+

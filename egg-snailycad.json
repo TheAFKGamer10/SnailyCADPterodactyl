@@ -59,13 +59,13 @@
             "field_type": "text"
         },
         {
-            "name": "SECURE COOKIES",
-            "description": "Only enable when uterly required. (This may not work all the time; work-in-progress.)",
-            "env_variable": "SECURE_COOKIES_FOR_IFRAME",
-            "default_value": "false",
+            "name": "CLIENT PORT",
+            "description": "The port where the client should run on.",
+            "env_variable": "CLIENT_PORT",
+            "default_value": "39600",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "string|max:5|in:true,false",
+            "rules": "required|string|max:5",
             "field_type": "text"
         },
         {
@@ -79,9 +79,19 @@
             "field_type": "text"
         },
         {
-            "name": "CLIENT PORT",
-            "description": "The port where the client should run on.",
-            "env_variable": "CLIENT_PORT",
+            "name": "SECURE COOKIES",
+            "description": "Only enable when uterly required. (This may not work all the time; work-in-progress.)",
+            "env_variable": "SECURE_COOKIES_FOR_IFRAME",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "string|max:5|in:true,false",
+            "field_type": "text"
+        },
+        {
+            "name": "API PORT",
+            "description": "The port where the API should run on.",
+            "env_variable": "API_PORT",
             "default_value": "39600",
             "user_viewable": true,
             "user_editable": true,

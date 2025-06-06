@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+export PATH="/usr/lib/postgresql/17/bin:/usr/local/bin:$PATH"
 set -Eeo pipefail
 export PGHOST="/home/container/postgresql/service"
 
@@ -425,6 +426,8 @@ if ! _is_sourced; then
 	if [ ! -f /home/container/postgresql/data/PG_VERSION ]; then
 		echo "Initializing PostgreSQL data directory..."
 		rm -rf /home/container/postgresql/data
+		# Check if initdb is available before using it
+		which initdb || { echo "initdb not found in PATH!"; exit 1; }
 		initdb -D /home/container/postgresql/data
 	else
 		echo "PostgreSQL data directory already initialized; Skipping."

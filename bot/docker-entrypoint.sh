@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+export PATH="/usr/lib/postgresql/17/bin:/usr/local/bin:$PATH"
 set -Eeo pipefail
 export PGHOST="/home/container/postgresql/service"
 
@@ -6,7 +7,7 @@ export PGHOST="/home/container/postgresql/service"
 POSTGRES_PASSWORD=$(grep 'POSTGRES_PASSWORD=' .env | cut -d '=' -f2 | tr -d '"')
 export POSTGRES_PASSWORD
 
-POSTGRES_USER="snailycadbot"
+POSTGRES_USER="snailycad"
 export POSTGRES_USER
 
 # TODO swap to -Eeuo pipefail above (after handling all potentially-unset variables)
@@ -237,11 +238,11 @@ docker_setup_db() {
 			docker_process_sql --dbname postgres -c "CREATE DATABASE \"${POSTGRES_DB}\" WITH OWNER = \"${POSTGRES_USER}\";"
 		fi
 
-		# Check if the 'snaily-cadv4-discord-bot' database exists and create it if it does not, and it is not the primary db
-		if [ "${POSTGRES_DB}" != "snaily-cadv4-discord-bot" ]; then
-			dbExists=$(docker_process_sql --dbname postgres -tAc "SELECT 1 FROM pg_database WHERE datname='snaily-cadv4-discord-bot'")
+		# Check if the 'snaily-cad-v4' database exists and create it if it does not, and it is not the primary db
+		if [ "${POSTGRES_DB}" != "snaily-cad-v4" ]; then
+			dbExists=$(docker_process_sql --dbname postgres -tAc "SELECT 1 FROM pg_database WHERE datname='snaily-cad-v4'")
 			if [ "$dbExists" != "1" ]; then
-				docker_process_sql --dbname postgres -c "CREATE DATABASE \"snaily-cadv4-discord-bot\" WITH OWNER = \"${POSTGRES_USER}\";"
+				docker_process_sql --dbname postgres -c "CREATE DATABASE \"snaily-cad-v4\" WITH OWNER = \"${POSTGRES_USER}\";"
 			fi
 		fi
 		printf '\n'
@@ -425,6 +426,8 @@ if ! _is_sourced; then
 	if [ ! -f /home/container/postgresql/data/PG_VERSION ]; then
 		echo "Initializing PostgreSQL data directory..."
 		rm -rf /home/container/postgresql/data
+		# Check if initdb is available before using it
+		which initdb || { echo "initdb not found in PATH!"; exit 1; }
 		initdb -D /home/container/postgresql/data
 	else
 		echo "PostgreSQL data directory already initialized; Skipping."
