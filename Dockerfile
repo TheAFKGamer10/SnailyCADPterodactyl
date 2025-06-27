@@ -21,22 +21,31 @@ RUN set -eux; \
 RUN set -ex; \
 	apt-get update; \
 	apt-get install -y --no-install-recommends \
-	gnupg \
-	less \
-	curl \
-	ca-certificates \
-	iproute2 \
-	git \
-	make \
-	tar \
-	xz-utils \
-	build-essential \
-	; \
-	rm -rf /var/lib/apt/lists/*
+		gnupg \
+		less \
+		curl \
+		ca-certificates \
+		iproute2 \
+		git \
+		make \
+		tar \
+		xz-utils \
+		build-essential; \
+	rm -rf /var/lib/apt/lists/*; \
+	ARCH=$(uname -m); \
+	if [ "$ARCH" = "x86_64" ]; then \
+		curl -L -o /tmp/cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb; \
+	elif [ "$ARCH" = "aarch64" ]; then \
+		curl -L -o /tmp/cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64.deb; \
+	else \
+		echo "Unsupported architecture: $ARCH" && exit 1; \
+	fi; \
+	dpkg -i /tmp/cloudflared.deb; \
+	rm /tmp/cloudflared.deb
 
 
-ENV PGDATA "/home/container/postgresql/data"
-ENV PGFOLDER "/home/container/postgresql"
+ENV PGDATA="/home/container/postgresql/data"
+ENV PGFOLDER="/home/container/postgresql"
 
 RUN mkdir -p "$PGDATA" && chown -R container:root "$PGFOLDER" && chmod 1777 "$PGDATA"
 # VOLUME "$PGFOLDER"
@@ -52,7 +61,7 @@ USER root
 RUN groupadd --gid 1000 node \
 	&& useradd --uid 1000 --gid node --shell /bin/bash --create-home node
 
-ENV NODE_VERSION 22.14.0
+ENV NODE_VERSION=22.14.0
 
 RUN ARCH= OPENSSL_ARCH= && dpkgArch="$(dpkg --print-architecture)" \
 	&& case "${dpkgArch##*-}" in \
@@ -86,13 +95,13 @@ RUN ARCH= OPENSSL_ARCH= && dpkgArch="$(dpkg --print-architecture)" \
 	CC68F5A3106FF448322E48ED27F5E38D5B0A215F \
 	# Node 22
 	C0D6248439F1D5604AAFFB4021D900FFDB233756 \
-    DD792F5973C6DE52C432CBDAC77ABFA00DDBF2B7 \
-    CC68F5A3106FF448322E48ED27F5E38D5B0A215F \
-    8FCCA13FEF1D0C2E91008E09770F7A9A5AE15600 \
-    890C08DB8579162FEE0DF9DB8BEAB4DFCF555EF4 \
-    C82FA3AE1CBEDC6BE46B9360C43CEC45C17AB93C \
-    108F52B48DB57BB0CC439B2997B01419BD92F80A \
-    A363A499291CBBC940DD62E41F10027AF002F8B0 \
+	DD792F5973C6DE52C432CBDAC77ABFA00DDBF2B7 \
+	CC68F5A3106FF448322E48ED27F5E38D5B0A215F \
+	8FCCA13FEF1D0C2E91008E09770F7A9A5AE15600 \
+	890C08DB8579162FEE0DF9DB8BEAB4DFCF555EF4 \
+	C82FA3AE1CBEDC6BE46B9360C43CEC45C17AB93C \
+	108F52B48DB57BB0CC439B2997B01419BD92F80A \
+	A363A499291CBBC940DD62E41F10027AF002F8B0 \
 	; do \
 	gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys "$key" || \
 	gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "$key" ; \
@@ -123,12 +132,12 @@ RUN ARCH= OPENSSL_ARCH= && dpkgArch="$(dpkg --print-architecture)" \
 
 
 # Install pnpm
-RUN         npm install npm typescript ts-node @types/node --location=global
-RUN         npm install pnpm@9.0.4 --location=global
-ENV 	    SHELL=/bin/bash
-RUN 	    mkdir -p /home/container/.pnpm-global
-ENV         PNPM_HOME=/home/container/.pnpm-global
-ENV         PATH=$PATH:/home/container/.pnpm-global
+RUN npm install npm typescript ts-node @types/node --location=global
+RUN npm install pnpm@9.0.4 --location=global
+ENV SHELL=/bin/bash
+RUN mkdir -p /home/container/.pnpm-global
+ENV PNPM_HOME=/home/container/.pnpm-global
+ENV PATH=$PATH:/home/container/.pnpm-global
 
 RUN mkdir -p /home/container/postgresql/service && \
 	mkdir -p /home/container/postgresql/data && \
@@ -140,9 +149,9 @@ RUN mkdir -p /home/container/postgresql/service && \
 RUN chown -R container:root /home/container
 RUN chmod -R 777 /home/container
 
-COPY        --chown=container:root ./docker-entrypoint.sh /docker-entrypoint.sh
-RUN         chmod +x /docker-entrypoint.sh
-ENV HOME /home/container
+COPY --chown=container:root ./docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+ENV HOME=/home/container
 WORKDIR /home/container
 EXPOSE 5432
 

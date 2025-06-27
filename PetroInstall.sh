@@ -4,8 +4,8 @@ apt install -y git curl wget jq
 mkdir -p /mnt/server
 cd /mnt/server
 
-rm -f snailycadptero.cjs
-rm -rf snaily-cadv4
+mkdir -p tmp logs modules/cloudflared
+curl -L -o /mnt/server/modules/cloudflared/start.sh https://raw.githubusercontent.com/TheAFKGamer10/SnailyCADPterodactyl/main/modules/cloudflared/start.sh
 
 # Fetch random secrets
 SECRET=$(curl -s 'https://www.random.org/strings/?num=1&len=32&digits=on&upperalpha=on&loweralpha=on&unique=on&format=plain' | tr -d '\n\r')

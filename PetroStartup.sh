@@ -1,1 +1,1 @@
-pnpm install && node scripts/copy-env.mjs --client --api && pnpm run build > buildout.txt && pnpm run start
+pnpm install && node scripts/copy-env.mjs --client --api && pnpm run build > logs/buildout.txt && if [ -f ./modules/cloudflared/start.sh ]; then bash ./modules/cloudflared/start.sh; fi && pnpm run start
