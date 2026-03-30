@@ -31,6 +31,7 @@ sed -i "s|PORT_CLIENT=.*|PORT_CLIENT=\"$CLIENT_PORT\"|" .env
 sed -i "s|PORT_API=.*|PORT_API=\"$API_PORT\"|" .env
 sed -i "s|DOMAIN=.*|DOMAIN=\"$DOMAIN\"|" .env
 sed -i "s|SECURE_COOKIES_FOR_IFRAME=.*|SECURE_COOKIES_FOR_IFRAME=\"$SECURE_COOKIES_FOR_IFRAME\"|" .env
+echo 'TURBO_TELEMETRY_DISABLED=1' >> .env
 
 echo -e "Install Complete"
 exit 0

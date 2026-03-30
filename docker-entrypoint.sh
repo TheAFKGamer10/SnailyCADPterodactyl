@@ -102,8 +102,8 @@ docker_init_database_dir() {
 	# Define the PostgreSQL data directory
 	DATA_DIR="/home/container/postgresql/data"
 
-	# Check if the directory exists and is not empty
-	if [ ! -d "$DATA_DIR" ] && [ ! "$(ls -A $DATA_DIR)" ]; then
+	# Initialize if the directory doesn't exist or is empty
+	if [ ! -d "$DATA_DIR" ] || [ -z "$(ls -A "$DATA_DIR" 2>/dev/null)" ]; then
 		echo "Initializing PostgreSQL database..."
 		eval 'initdb --username="$POSTGRES_USER" --pwfile=<(printf "%s\n" "$POSTGRES_PASSWORD") '"$POSTGRES_INITDB_ARGS"' "$@"'
 	fi
@@ -221,6 +221,17 @@ docker_process_sql() {
 # uses environment variables for input: POSTGRES_DB
 docker_setup_db() {
 	local dbAlreadyExists
+
+	# Ensure psql uses the configured superuser name when connecting
+	export PGUSER="${POSTGRES_USER}"
+
+	# Fallback: if the traditional 'postgres' role is missing, create it
+	# so tooling that expects a 'postgres' superuser still works.
+	postgresRoleExists=$(docker_process_sql --dbname postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='postgres'")
+	if [ "$postgresRoleExists" != "1" ]; then
+		printf 'Creating fallback role "postgres"...\n'
+		docker_process_sql --dbname postgres -c "CREATE ROLE \"postgres\" WITH LOGIN PASSWORD '${POSTGRES_PASSWORD}' SUPERUSER;"
+	fi
 	dbAlreadyExists="$(
 		POSTGRES_DB= docker_process_sql --dbname postgres --set db="$POSTGRES_DB" --tuples-only <<-'EOSQL'
 			SELECT 1 FROM pg_database WHERE datname = :'db' ;
@@ -422,13 +433,20 @@ if ! _is_sourced; then
 		rm -f /home/container/postgresql/service/.s.PGSQL.5432.lock
 	fi
 
-	# Initialize the data directory if needed
+	# Initialize the data directory if needed. Use the docker helper which
+	# sets up nss_wrapper (so initdb won't fail when the container is started
+	# with an arbitrary UID that has no /etc/passwd entry).
 	if [ ! -f /home/container/postgresql/data/PG_VERSION ]; then
 		echo "Initializing PostgreSQL data directory..."
 		rm -rf /home/container/postgresql/data
 		# Check if initdb is available before using it
 		which initdb || { echo "initdb not found in PATH!"; exit 1; }
-		initdb -D /home/container/postgresql/data
+		# Ensure environment and directories are prepared, then run the
+		# init helper which will call initdb while faking passwd entries
+		# if necessary.
+		docker_setup_env
+		docker_create_db_directories
+		docker_init_database_dir
 	else
 		echo "PostgreSQL data directory already initialized; Skipping."
 	fi
